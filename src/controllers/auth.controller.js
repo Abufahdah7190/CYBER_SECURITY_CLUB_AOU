@@ -13,17 +13,21 @@ const env = require('../config/env');
 const MAX_FAILED_ATTEMPTS = 5;
 
 function cookieOptions(maxAgeMs) {
-  return {
+  const options = {
     httpOnly: true,
     secure: env.isProd,
     sameSite: 'lax',
     domain: env.COOKIE_DOMAIN,
     path: '/',
-    maxAge: maxAgeMs,
   };
+  // Omitting Max-Age/Expires creates a browser-session cookie. It is
+  // intentionally not restored after the browser is closed.
+  if (Number.isFinite(maxAgeMs)) options.maxAge = maxAgeMs;
+  return options;
 }
 
 async function issueSession(res, user, req) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   const accessToken = signAccessToken(user);
   const refreshToken = generateRefreshToken();
   await tokensRepo.storeRefreshToken({
@@ -33,8 +37,11 @@ async function issueSession(res, user, req) {
     ip: req.ip,
   });
 
-  res.cookie('access_token', accessToken, cookieOptions(15 * 60 * 1000));
-  res.cookie('refresh_token', refreshToken, cookieOptions(env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000));
+  // Both cookies are session-only. The JWT/database TTLs still limit the
+  // lifetime while the browser session is open, but reopening the browser
+  // requires a fresh login.
+  res.cookie('cc_access_session', accessToken, cookieOptions());
+  res.cookie('cc_refresh_session', refreshToken, cookieOptions());
 }
 
 function publicUser(user) {
@@ -150,7 +157,7 @@ async function login(req, res, next) {
 // ---------------------------------------------------------------------
 async function refresh(req, res, next) {
   try {
-    const rawToken = req.cookies && req.cookies.refresh_token;
+    const rawToken = req.cookies && req.cookies.cc_refresh_session;
     if (!rawToken) return res.status(401).json({ error: 'يجب تسجيل الدخول للمتابعة' });
 
     const tokenHash = hashToken(rawToken);
@@ -176,12 +183,15 @@ async function refresh(req, res, next) {
 // ---------------------------------------------------------------------
 async function logout(req, res, next) {
   try {
-    const rawToken = req.cookies && req.cookies.refresh_token;
+    const rawToken = req.cookies && req.cookies.cc_refresh_session;
     if (rawToken) {
       await tokensRepo.revokeRefreshToken(hashToken(rawToken));
     }
-    res.clearCookie('access_token', { path: '/' });
-    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('cc_access_session', cookieOptions());
+    res.clearCookie('cc_refresh_session', cookieOptions());
+    // Remove cookies created by older deployments as well.
+    res.clearCookie('access_token', cookieOptions());
+    res.clearCookie('refresh_token', cookieOptions());
     if (req.user) {
       await recordAudit({ actorId: req.user.id, action: 'user.logout', entityType: 'user', entityId: req.user.id, req });
     }

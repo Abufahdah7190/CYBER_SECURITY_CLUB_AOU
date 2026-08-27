@@ -53,8 +53,37 @@
   }
 
   function openCourse(card) {
-    const slug = card.dataset.courseId;
-    window.location.href = `course.html?course=${encodeURIComponent(slug)}`;
+    const slug = card?.dataset.courseId;
+    if (!slug) return;
+    const target = new URL('course.html', document.baseURI);
+    target.searchParams.set('course', slug);
+    window.location.assign(target.href);
+  }
+
+  function bindCourseNavigation() {
+    document.querySelectorAll('[data-course-id]').forEach((card) => {
+      card.setAttribute('role', 'link');
+      card.setAttribute('tabindex', '0');
+      card.addEventListener('click', (event) => {
+        // Buttons remain available for their own actions; clicking anywhere
+        // else on the course card opens the dedicated learning page.
+        if (event.target.closest('button, a, input, select, textarea')) return;
+        openCourse(card);
+      });
+      card.addEventListener('keydown', (event) => {
+        if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button, a, input, select, textarea')) {
+          event.preventDefault();
+          openCourse(card);
+        }
+      });
+    });
+    document.querySelectorAll('.course-action').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openCourse(button.closest('[data-course-id]'));
+      });
+    });
   }
 
   function showQuiz(detail, slug, index) {
@@ -103,7 +132,7 @@
   }
   function shareCertificate(slug) { const certificate = state.certificates.find((item) => item.courseSlug === slug); const text = certificate ? `I completed ${certificate.courseName} at AOU Cyber Security Club. Certificate: ${certificate.certificateCode}` : 'I completed a course at AOU Cyber Security Club.'; window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin + '/?certificate=' + encodeURIComponent(slug))}&summary=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer'); }
   function init() {
-    document.querySelectorAll('.course-action').forEach((button) => button.addEventListener('click', () => openCourse(button.closest('[data-course-id]'))));
+    bindCourseNavigation();
     document.addEventListener('auth:ready', loadState);
     loadState();
   }

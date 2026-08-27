@@ -11,7 +11,7 @@ const { verifyAccessToken } = require('../utils/tokens');
  * hiding a button in the UI is never treated as access control (req #13).
  */
 function requireAuth(req, res, next) {
-  const cookieToken = req.cookies && req.cookies.access_token;
+  const cookieToken = req.cookies && req.cookies.cc_access_session;
   const header = req.headers.authorization;
   const bearerToken = header && header.startsWith('Bearer ') ? header.slice(7) : null;
   const token = cookieToken || bearerToken;
@@ -35,7 +35,7 @@ function requireAuth(req, res, next) {
  * slightly when logged in (not needed yet in Phase 4, kept for later use).
  */
 function optionalAuth(req, res, next) {
-  const cookieToken = req.cookies && req.cookies.access_token;
+  const cookieToken = req.cookies && req.cookies.cc_access_session;
   if (!cookieToken) return next();
   try {
     const payload = verifyAccessToken(cookieToken);

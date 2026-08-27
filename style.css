@@ -2150,3 +2150,9 @@ body.auth-locked #tab-auth {
 .btn.small { padding: 8px 11px; font-size: 12px; }
 .profile-empty { padding: 22px 14px; border: 1px dashed var(--glass-border); border-radius: 12px; color: var(--muted2); text-align: center; line-height: 1.7; }
 @media (max-width: 760px) { .profile-layout { grid-template-columns: 1fr; } .profile-certificate-actions { grid-column: 1 / -1; } }
+
+/* Dedicated course navigation */
+.course-card[role="link"] { cursor: pointer; }
+.course-card[role="link"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.course-card[role="link"] .course-image { transition: transform .2s ease, filter .2s ease; }
+.course-card[role="link"]:hover .course-image { transform: scale(1.025); filter: brightness(1.08); }

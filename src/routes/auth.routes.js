@@ -36,7 +36,8 @@ router.post(
 );
 
 router.post('/refresh', ctrl.refresh);
-router.post('/logout', requireAuth, ctrl.logout);
+// Logout must remain public so expired access tokens cannot prevent cookie cleanup.
+router.post('/logout', ctrl.logout);
 router.get('/me', requireAuth, ctrl.me);
 
 router.patch(

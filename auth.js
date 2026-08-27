@@ -9,6 +9,18 @@
   const AUTH_URL = `${API_BASE}/api/auth`;
   const $ = (selector) => document.querySelector(selector);
 
+  // Authentication credentials must never be kept in Web Storage. Remove
+  // legacy keys from older builds in case the site was upgraded in-place.
+  function clearLegacyAuthStorage() {
+    const keys = ['access_token', 'refresh_token', 'cc_access_session', 'cc_refresh_session', 'auth_token', 'authToken', 'cyberclub_token'];
+    ['localStorage', 'sessionStorage'].forEach((name) => {
+      try {
+        const storage = window[name];
+        keys.forEach((key) => storage.removeItem(key));
+      } catch (_) { /* storage may be blocked */ }
+    });
+  }
+
   function setMessage(text, type) {
     const box = $('#auth-message');
     if (!box) return;
@@ -65,6 +77,12 @@
 
   function showUser(user) {
     unlockSite();
+    const authPanel = $('#tab-auth');
+    const authTab = document.querySelector('[data-tab="auth"]');
+    const profileTab = document.querySelector('[data-tab="profile"]');
+    if (authPanel) { authPanel.style.display = 'none'; authPanel.hidden = true; authPanel.setAttribute('aria-hidden', 'true'); }
+    if (authTab) { authTab.hidden = true; authTab.setAttribute('aria-hidden', 'true'); }
+    if (profileTab) { profileTab.hidden = false; profileTab.removeAttribute('aria-hidden'); }
     const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
     $('#auth-user-name').textContent = name || user.email || 'المستخدم';
     $('#auth-user').hidden = false;
@@ -76,8 +94,12 @@
 
   function showForms() {
     lockSite();
+    const authPanel = $('#tab-auth');
+    const authTab = document.querySelector('[data-tab="auth"]');
     const profileTab = document.querySelector('[data-tab="profile"]');
-    if (profileTab) profileTab.hidden = true;
+    if (authPanel) { authPanel.hidden = false; authPanel.removeAttribute('aria-hidden'); }
+    if (authTab) { authTab.hidden = false; authTab.removeAttribute('aria-hidden'); }
+    if (profileTab) { profileTab.hidden = true; profileTab.setAttribute('aria-hidden', 'true'); }
     $('#auth-user').hidden = true;
     document.querySelector('.auth-switcher').hidden = false;
     switchView('login');
@@ -193,6 +215,7 @@
   }
 
   function initAuth() {
+    clearLegacyAuthStorage();
     const login = $('#login-form');
     const register = $('#register-form');
     const forgot = $('#forgot-form');
