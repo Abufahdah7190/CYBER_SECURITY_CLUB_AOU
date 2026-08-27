@@ -9,6 +9,7 @@ const morgan = require('morgan');
 
 const env = require('./config/env');
 const authRoutes = require('./routes/auth.routes');
+const learningRoutes = require('./routes/learning.routes');
 const { generalLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
 
@@ -55,6 +56,7 @@ if (!env.isProd) {
 
 app.use('/api', generalLimiter);
 app.use('/api/auth', authRoutes);
+app.use('/api/learning', learningRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true, env: env.NODE_ENV }));
 

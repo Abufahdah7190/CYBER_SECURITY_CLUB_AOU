@@ -43,16 +43,33 @@
     button.textContent = busy ? 'جارٍ التنفيذ...' : button.dataset.originalText;
   }
 
+  function unlockSite() {
+    document.body.classList.remove('auth-locked');
+    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-home' ? 'block' : 'none'; });
+    document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'home'));
+    const authPanel = $('#tab-auth');
+    if (authPanel) authPanel.style.display = 'none';
+  }
+
+  function lockSite() {
+    document.body.classList.add('auth-locked');
+    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-auth' ? 'block' : 'none'; });
+    document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'auth'));
+  }
+
   function showUser(user) {
+    unlockSite();
     const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
     $('#auth-user-name').textContent = name || user.email || 'المستخدم';
     $('#auth-user').hidden = false;
     $('#login-form').hidden = true;
     $('#register-form').hidden = true;
     document.querySelector('.auth-switcher').hidden = true;
+    document.dispatchEvent(new CustomEvent('auth:ready', { detail: { user } }));
   }
 
   function showForms() {
+    lockSite();
     $('#auth-user').hidden = true;
     document.querySelector('.auth-switcher').hidden = false;
     switchView('login');
@@ -121,7 +138,7 @@
     try {
       const data = await request('/login', { method: 'POST', body: JSON.stringify(formData(form)) });
       showUser(data.user);
-      setMessage('تم تسجيل الدخول بنجاح.', 'success');
+      setMessage('تم تسجيل الدخول بنجاح. يمكنك الآن تصفح أقسام الموقع.', 'success');
     } catch (error) {
       setMessage(error.message, 'error');
     } finally {
@@ -176,6 +193,7 @@
     register.addEventListener('submit', handleRegister);
     forgot.addEventListener('submit', handleForgotPassword);
     $('#logout-button').addEventListener('click', handleLogout);
+    lockSite();
     document.querySelectorAll('[data-auth-view]').forEach((button) => {
       button.addEventListener('click', () => switchView(button.dataset.authView));
     });

@@ -1,0 +1,93 @@
+'use strict';
+const express = require('express');
+const { body, param } = require('express-validator');
+const { pool } = require('../db/pool');
+const { requireAuth } = require('../middleware/auth');
+const { handleValidation } = require('../middleware/errors');
+const crypto = require('crypto');
+const QRCode = require('qrcode');
+const env = require('../config/env');
+
+const router = express.Router();
+const courseParam = param('courseSlug').trim().isSlug().isLength({ max: 80 });
+
+// Public verification endpoint: exposes only certificate verification data.
+router.get('/verify/:certificateCode', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT certificate_code AS "certificateCode", course_name AS "courseName", student_name AS "studentName",
+              language, issued_at AS "issuedAt"
+       FROM student_course_certificates
+       WHERE certificate_code = $1`,
+      [req.params.certificateCode]
+    );
+    if (!rows[0]) return res.status(404).json({ valid: false, error: 'الشهادة غير موجودة أو غير صالحة' });
+    res.json({ valid: true, certificate: rows[0] });
+  } catch (error) { next(error); }
+});
+
+router.use(requireAuth);
+
+router.get('/progress', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT course_slug AS "courseSlug", percent, last_section AS "lastSection",
+              last_accessed_at AS "lastAccessedAt", quiz_scores AS "quizScores",
+              certificate_language AS language, completed_at AS "completedAt"
+       FROM student_course_progress WHERE student_id = $1 ORDER BY last_accessed_at DESC`,
+      [req.user.id]
+    );
+    const certificates = await pool.query(
+      `SELECT course_slug AS "courseSlug", course_name AS "courseName", language,
+              certificate_code AS "certificateCode", issued_at AS "issuedAt"
+       FROM student_course_certificates WHERE student_id = $1 ORDER BY issued_at DESC`,
+      [req.user.id]
+    );
+    res.json({ progress: rows, certificates: certificates.rows });
+  } catch (error) { next(error); }
+});
+
+router.put('/progress/:courseSlug', [courseParam, body('percent').isInt({ min: 0, max: 100 }), body('lastSection').optional().isInt({ min: 0, max: 20 }), body('quizScores').optional().isObject(), body('language').optional().isIn(['ar', 'en'])], handleValidation, async (req, res, next) => {
+  try {
+    const { courseSlug } = req.params;
+    const percent = Number(req.body.percent);
+    const lastSection = Number(req.body.lastSection || 0);
+    const quizScores = req.body.quizScores || {};
+    const language = req.body.language || 'ar';
+    const completedAt = percent >= 80 ? new Date() : null;
+    const { rows } = await pool.query(
+      `INSERT INTO student_course_progress (student_id, course_slug, percent, last_section, last_accessed_at, quiz_scores, certificate_language, completed_at)
+       VALUES ($1,$2,$3,$4,now(),$5,$6,$7)
+       ON CONFLICT (student_id, course_slug) DO UPDATE SET percent=EXCLUDED.percent,
+         last_section=EXCLUDED.last_section, last_accessed_at=now(), quiz_scores=EXCLUDED.quiz_scores,
+         certificate_language=EXCLUDED.certificate_language,
+         completed_at=CASE WHEN EXCLUDED.percent >= 80 THEN COALESCE(student_course_progress.completed_at, now()) ELSE NULL END,
+         updated_at=now()
+       RETURNING course_slug AS "courseSlug", percent, last_section AS "lastSection", last_accessed_at AS "lastAccessedAt", quiz_scores AS "quizScores", certificate_language AS language, completed_at AS "completedAt"`,
+      [req.user.id, courseSlug, percent, lastSection, quizScores, language, completedAt]
+    );
+    res.json({ progress: rows[0] });
+  } catch (error) { next(error); }
+});
+
+router.post('/certificates/:courseSlug', [courseParam, body('courseName').trim().isLength({ min: 2, max: 200 }), body('language').isIn(['ar', 'en'])], handleValidation, async (req, res, next) => {
+  try {
+    const check = await pool.query('SELECT percent FROM student_course_progress WHERE student_id=$1 AND course_slug=$2', [req.user.id, req.params.courseSlug]);
+    if (!check.rows[0] || Number(check.rows[0].percent) < 80) return res.status(400).json({ error: 'يجب إكمال 80% على الأقل من الدورة للحصول على الشهادة' });
+    const user = await pool.query('SELECT first_name, last_name FROM users WHERE id=$1', [req.user.id]);
+    const studentName = `${user.rows[0].first_name} ${user.rows[0].last_name}`;
+    const code = `CSC-AOU-${new Date().getFullYear()}-${String(crypto.randomInt(1000, 10000))}`;
+    const { rows } = await pool.query(
+      `INSERT INTO student_course_certificates (student_id, course_slug, course_name, student_name, language, certificate_code)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       ON CONFLICT (student_id, course_slug) DO UPDATE SET language=EXCLUDED.language
+       RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt"`,
+      [req.user.id, req.params.courseSlug, req.body.courseName, studentName, req.body.language, code]
+    );
+    const certificate = rows[0];
+    const verificationUrl = `${env.FRONTEND_URL}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}`;
+    const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'M', margin: 1, width: 220 });
+    res.status(201).json({ certificate: { ...certificate, verificationUrl, qrDataUrl } });
+  } catch (error) { next(error); }
+});
+module.exports = router;
