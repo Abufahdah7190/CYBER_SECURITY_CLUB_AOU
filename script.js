@@ -1361,5 +1361,5 @@ function startApp() {
 
 document.addEventListener('languagechange', startApp, { once: true });
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(startApp, 300);
+  startApp();
 });

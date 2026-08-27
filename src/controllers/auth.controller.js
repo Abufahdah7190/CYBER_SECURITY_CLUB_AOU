@@ -46,6 +46,7 @@ function publicUser(user) {
     phone: user.phone,
     major: user.major,
     role: user.role,
+    gender: user.gender,
   };
 }
 
@@ -54,7 +55,7 @@ function publicUser(user) {
 // ---------------------------------------------------------------------
 async function register(req, res, next) {
   try {
-    const { firstName, lastName, phone, email, password, major } = req.body;
+    const { firstName, lastName, phone, email, password, major, gender } = req.body;
     const normalizedEmail = String(email).trim().toLowerCase();
 
     const emailError = validateUniversityEmail(normalizedEmail);
@@ -80,6 +81,7 @@ async function register(req, res, next) {
       phone,
       passwordHash,
       major,
+      gender,
       role: 'student', // public registration can never self-assign a privileged role
     });
 

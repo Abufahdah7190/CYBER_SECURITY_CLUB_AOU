@@ -54,16 +54,7 @@
 
   function openCourse(card) {
     const slug = card.dataset.courseId;
-    const course = getCourse(slug);
-    const saved = getSaved(slug);
-    let detail = card.querySelector('.course-detail');
-    if (!detail) { detail = document.createElement('div'); detail.className = 'course-detail'; card.appendChild(detail); }
-    detail.innerHTML = `<h4>محتوى الدورة والاختبارات</h4><p class="last-access">آخر وصول محفوظ في الحساب: ${saved.lastAccessedAt ? new Date(saved.lastAccessedAt).toLocaleString('ar-SA') : 'سيُحفظ الآن'}</p><div class="course-sections">${course.sections.map((title, index) => { const passed = saved.quizScores?.[index] === true; return `<div class="course-section ${passed ? 'passed' : ''}"><div><strong>${index + 1}. ${title}</strong><small>${passed ? 'تم اجتياز الاختبار' : 'اختبار قصير بعد القسم'}</small></div><button type="button" class="btn ghost section-quiz" data-index="${index}">${passed ? 'إعادة الاختبار' : 'ابدأ الاختبار'}</button><div class="quiz-box" hidden></div></div>`; }).join('')}</div><div class="certificate-actions" hidden><label>لغة الشهادة <select class="certificate-language"><option value="ar">العربية</option><option value="en">English</option></select></label><button type="button" class="btn primary issue-certificate">إصدار الشهادة</button><button type="button" class="btn ghost share-now">مشاركة على LinkedIn</button></div>`;
-    detail.querySelectorAll('.section-quiz').forEach((button) => button.addEventListener('click', () => showQuiz(detail, slug, Number(button.dataset.index))));
-    detail.querySelector('.issue-certificate')?.addEventListener('click', () => issueCertificate(detail, slug, course.name));
-    detail.querySelector('.share-now')?.addEventListener('click', () => shareCertificate(slug));
-    updateCertificateActions(detail, Number(saved.percent || 0));
-    detail.hidden = false;
+    window.location.href = `course.html?course=${encodeURIComponent(slug)}`;
   }
 
   function showQuiz(detail, slug, index) {

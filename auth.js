@@ -45,18 +45,20 @@
 
   function unlockSite() {
     document.body.classList.remove('auth-locked');
+    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-home' ? 'block' : 'none'; });
+    document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'home'));
     const authPanel = $('#tab-auth');
     if (authPanel) authPanel.style.display = 'none';
-    const homeTab = document.querySelector('[data-tab="home"]');
-    if (homeTab) homeTab.click();
+    const authTab = document.querySelector('[data-tab="auth"]');
+    if (authTab) authTab.hidden = true;
   }
 
   function lockSite() {
     document.body.classList.add('auth-locked');
-    const authPanel = $('#tab-auth');
-    if (authPanel) authPanel.style.display = 'block';
+    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-auth' ? 'block' : 'none'; });
+    document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'auth'));
     const authTab = document.querySelector('[data-tab="auth"]');
-    if (authTab) authTab.click();
+    if (authTab) authTab.hidden = false;
   }
 
   function showUser(user) {
