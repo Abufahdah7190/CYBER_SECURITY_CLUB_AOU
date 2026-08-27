@@ -68,6 +68,7 @@
 <button aria-controls="tab-cybermap" class="tab" data-i18n="tab.cybermap" data-tab="cybermap">خريطة الهجمات</button>
 <button aria-controls="tab-security-info" class="tab" data-i18n="tab.securityInfo" data-tab="security-info">معلومات الأمان</button>
 <button aria-controls="tab-learning-resources" class="tab" data-i18n="tab.learningResources" data-tab="learning-resources">مصادر التعلم السيبرانية</button>
+<button aria-controls="tab-learning" class="tab" data-tab="learning">الدورات والشهادات</button>
 <button aria-controls="tab-auth" class="tab auth-tab" data-tab="auth">تسجيل الدخول / التسجيل</button>
 </div>
 <div class="panel-wrap">
@@ -106,6 +107,50 @@
       <button class="btn primary auth-submit" type="submit">إنشاء الحساب</button>
     </form>
     <div class="auth-user" id="auth-user" hidden><p>تم تسجيل الدخول باسم <strong id="auth-user-name"></strong>.</p><button class="btn ghost" id="logout-button" type="button">تسجيل الخروج</button></div>
+  </div>
+</section>
+<section class="panel" id="tab-learning" style="display:none">
+  <div class="learning-shell">
+    <div class="learning-heading">
+      <span class="auth-kicker">CYBERCLUB ACADEMY</span>
+      <h2>الدورات والشهادات</h2>
+      <p>طوّر مهاراتك، تابع إنجازك، واحصل على شهادة عند إكمال الدورة.</p>
+    </div>
+    <div class="learning-summary card">
+      <div><strong id="learning-completed-count">0</strong><span>دورات مكتملة</span></div>
+      <div><strong id="learning-progress-percent">0%</strong><span>نسبة التقدم الكلية</span></div>
+      <div><strong id="learning-certificates-count">0</strong><span>شهادات متاحة</span></div>
+    </div>
+    <div class="course-grid">
+      <article class="course-card card" data-course-id="cyber-basics" data-course-progress="25">
+        <img class="course-image" src="assets/courses/cyber-basics.svg" alt="صورة دورة أساسيات الأمن السيبراني">
+        <span class="course-level">سهل · مبتدئ</span><h3>أساسيات الأمن السيبراني</h3>
+        <p>مفاهيم التهديدات، حماية الحسابات، والهندسة الاجتماعية.</p>
+        <div class="course-meta"><span>6 دروس</span><span>3 ساعات</span></div>
+        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
+        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
+      </article>
+      <article class="course-card card" data-course-id="network-defense" data-course-progress="50">
+        <img class="course-image" src="assets/courses/network-defense.svg" alt="صورة دورة الدفاع عن الشبكات">
+        <span class="course-level">متوسط الصعوبة</span><h3>الدفاع عن الشبكات</h3>
+        <p>تعلم مراقبة الشبكات، قراءة السجلات، والاستجابة للحوادث.</p>
+        <div class="course-meta"><span>8 دروس</span><span>5 ساعات</span></div>
+        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
+        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
+      </article>
+      <article class="course-card card" data-course-id="ethical-hacking" data-course-progress="75">
+        <img class="course-image" src="assets/courses/ethical-hacking.svg" alt="صورة دورة الاختبار الاختراقي الأخلاقي">
+        <span class="course-level">صعب · متقدم</span><h3>الاختبار الاختراقي الأخلاقي</h3>
+        <p>منهجية الاختبار المصرح به، اكتشاف الثغرات، وكتابة التقارير.</p>
+        <div class="course-meta"><span>10 دروس</span><span>8 ساعات</span></div>
+        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
+        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
+      </article>
+    </div>
+    <div class="certificates-card card">
+      <div><h3>شهاداتي</h3><p>تظهر الشهادة هنا بعد إكمال الدورة بالكامل.</p></div>
+      <div id="certificates-list" class="certificates-list"><span class="empty-state">لم تُكمل أي دورة بعد.</span></div>
+    </div>
   </div>
 </section>
 <section class="panel" id="tab-home" style="display:block">
@@ -1000,6 +1045,7 @@
 <script src="js/script.js"></script>
 <script src="js/globe-assets.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/learning.js"></script>
 <script src="js/attack-map.js"></script>
 </body>
 </html>
