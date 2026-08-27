@@ -35,12 +35,12 @@ async function createUser({ firstName, lastName, email, phone, passwordHash, maj
   return rows[0];
 }
 
-async function updateProfile(id, { firstName, lastName, phone, major }) {
+async function updateProfile(id, { firstName, lastName, phone, major, gender }) {
   const { rows } = await pool.query(
-    `UPDATE users SET first_name = $2, last_name = $3, phone = $4, major = $5
+    `UPDATE users SET first_name = $2, last_name = $3, phone = $4, major = $5, gender = $6
      WHERE id = $1
      RETURNING ${PUBLIC_COLUMNS}`,
-    [id, firstName, lastName, phone || null, major || null]
+    [id, firstName, lastName, phone || null, major || null, gender || null]
   );
   return rows[0] || null;
 }

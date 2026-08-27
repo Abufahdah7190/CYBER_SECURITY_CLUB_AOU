@@ -69,6 +69,7 @@
 <button aria-controls="tab-security-info" class="tab" data-i18n="tab.securityInfo" data-tab="security-info">معلومات الأمان</button>
 <button aria-controls="tab-learning-resources" class="tab" data-i18n="tab.learningResources" data-tab="learning-resources">مصادر التعلم السيبرانية</button>
 <button aria-controls="tab-learning" class="tab" data-tab="learning">الدورات</button>
+<button aria-controls="tab-profile" class="tab profile-tab" data-tab="profile" hidden>ملف الطالب</button>
 <button aria-controls="tab-auth" class="tab auth-tab" data-tab="auth">تسجيل الدخول / التسجيل</button>
 </div>
 <div class="panel-wrap">
@@ -100,14 +101,37 @@
       <div class="auth-field"><label for="register-email">البريد الإلكتروني الجامعي</label><input id="register-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
       <div class="auth-grid">
         <div class="auth-field"><label for="register-phone">رقم الهاتف</label><input id="register-phone" name="phone" type="tel" autocomplete="tel" required placeholder="05xxxxxxxx"></div>
-        <div class="auth-field"><label for="register-major">التخصص</label><select id="register-major" name="major" required><option value="">اختر التخصص</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select></div>
+        <div class="auth-field auth-choice-field"><label for="register-major">التخصص</label><div class="auth-select-shell"><span class="auth-choice-icon" aria-hidden="true">⌘</span><select id="register-major" name="major" required><option value="">اختر تخصصك الأكاديمي</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select><span class="auth-select-chevron" aria-hidden="true">⌄</span></div><small class="auth-choice-help">يساعدنا ذلك على تخصيص مسارك التعليمي.</small></div>
       </div>
-      <div class="auth-field"><label for="register-gender">الجنس</label><select id="register-gender" name="gender" required><option value="">اختر الجنس</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+      <div class="auth-field auth-choice-field"><label for="register-gender">الجنس</label><div class="auth-select-shell"><span class="auth-choice-icon" aria-hidden="true">◉</span><select id="register-gender" name="gender" required><option value="">اختر الجنس</option><option value="male">ذكر</option><option value="female">أنثى</option></select><span class="auth-select-chevron" aria-hidden="true">⌄</span></div><small class="auth-choice-help">تُستخدم هذه المعلومة لملفك الشخصي فقط.</small></div>
       <div class="auth-field"><label for="register-password">كلمة المرور</label><input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="10"><small>10 أحرف على الأقل، وتتضمن حرفًا كبيرًا وحرفًا صغيرًا ورقمًا.</small></div>
       <div class="auth-field"><label for="register-password-confirm">تأكيد كلمة المرور</label><input id="register-password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" required minlength="10"></div>
       <button class="btn primary auth-submit" type="submit">إنشاء الحساب</button>
     </form>
     <div class="auth-user" id="auth-user" hidden><p>تم تسجيل الدخول باسم <strong id="auth-user-name"></strong>.</p><button class="btn ghost" id="logout-button" type="button">تسجيل الخروج</button></div>
+  </div>
+</section>
+<section class="panel profile-panel" id="tab-profile" style="display:none">
+  <div class="profile-shell">
+    <div class="profile-heading"><span class="auth-kicker">STUDENT PROFILE</span><h2>ملف الطالب</h2><p>راجع بياناتك الشخصية وشهاداتك المحفوظة في حسابك.</p></div>
+    <div id="profile-message" class="profile-message" role="status"></div>
+    <div class="profile-layout">
+      <form id="profile-form" class="card profile-form" novalidate>
+        <div class="profile-card-heading"><div class="profile-avatar" id="profile-avatar">ط</div><div><h3>المعلومات الشخصية</h3><p>يمكنك تحديث بياناتك الأساسية باستثناء البريد الإلكتروني.</p></div></div>
+        <div class="auth-grid">
+          <div class="auth-field"><label for="profile-first-name">الاسم الأول</label><input id="profile-first-name" name="firstName" type="text" required minlength="2" maxlength="100"></div>
+          <div class="auth-field"><label for="profile-last-name">اسم العائلة</label><input id="profile-last-name" name="lastName" type="text" required minlength="2" maxlength="100"></div>
+        </div>
+        <div class="auth-field"><label for="profile-email">البريد الإلكتروني الجامعي</label><input id="profile-email" name="email" type="email" readonly></div>
+        <div class="auth-grid">
+          <div class="auth-field"><label for="profile-phone">رقم الهاتف</label><input id="profile-phone" name="phone" type="tel" required></div>
+          <div class="auth-field"><label for="profile-major">التخصص</label><select id="profile-major" name="major" required><option value="">اختر التخصص</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select></div>
+        </div>
+        <div class="auth-field"><label for="profile-gender">الجنس</label><select id="profile-gender" name="gender" required><option value="">اختر الجنس</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+        <button class="btn primary" type="submit">حفظ التعديلات</button>
+      </form>
+      <section class="card profile-certificates"><div class="profile-card-heading"><div class="profile-icon">★</div><div><h3>شهاداتي</h3><p id="profile-certificates-summary">جارٍ تحميل الشهادات...</p></div></div><div id="profile-certificates-list" class="profile-certificates-list"></div></section>
+    </div>
   </div>
 </section>
 <section class="panel" id="tab-learning" style="display:none">
@@ -122,31 +146,22 @@
       <div><strong id="learning-progress-percent">0%</strong><span>نسبة التقدم الكلية</span></div>
       <div><strong id="learning-certificates-count">0</strong><span>شهادات متاحة</span></div>
     </div>
+    <div class="learning-paths">
+      <div class="learning-path-card"><span class="path-step">01</span><div><strong>المسار التأسيسي</strong><small>ابدأ هنا: مفاهيم الأمن والوعي الرقمي</small></div></div>
+      <div class="path-line" aria-hidden="true"></div>
+      <div class="learning-path-card"><span class="path-step">02</span><div><strong>المسار المهني</strong><small>شبكات، دفاع، وتحليل الحوادث</small></div></div>
+      <div class="path-line" aria-hidden="true"></div>
+      <div class="learning-path-card"><span class="path-step">03</span><div><strong>المسار المتقدم</strong><small>اختبار اختراقي، سحابة، وقيادة أمنية</small></div></div>
+    </div>
     <div class="course-grid">
-      <article class="course-card card" data-course-id="cyber-basics" data-course-progress="25">
-        <img class="course-image" src="assets/courses/cyber-basics.svg" alt="صورة دورة أساسيات الأمن السيبراني">
-        <span class="course-level">سهل · مبتدئ</span><h3>أساسيات الأمن السيبراني</h3>
-        <p>مفاهيم التهديدات، حماية الحسابات، والهندسة الاجتماعية.</p>
-        <div class="course-meta"><span>6 دروس</span><span>3 ساعات</span></div>
-        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
-        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
-      </article>
-      <article class="course-card card" data-course-id="network-defense" data-course-progress="50">
-        <img class="course-image" src="assets/courses/network-defense.svg" alt="صورة دورة الدفاع عن الشبكات">
-        <span class="course-level">متوسط الصعوبة</span><h3>الدفاع عن الشبكات</h3>
-        <p>تعلم مراقبة الشبكات، قراءة السجلات، والاستجابة للحوادث.</p>
-        <div class="course-meta"><span>8 دروس</span><span>5 ساعات</span></div>
-        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
-        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
-      </article>
-      <article class="course-card card" data-course-id="ethical-hacking" data-course-progress="75">
-        <img class="course-image" src="assets/courses/ethical-hacking.svg" alt="صورة دورة الاختبار الاختراقي الأخلاقي">
-        <span class="course-level">صعب · متقدم</span><h3>الاختبار الاختراقي الأخلاقي</h3>
-        <p>منهجية الاختبار المصرح به، اكتشاف الثغرات، وكتابة التقارير.</p>
-        <div class="course-meta"><span>10 دروس</span><span>8 ساعات</span></div>
-        <div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p>
-        <button class="btn primary course-action" type="button">ابدأ الدورة</button>
-      </article>
+      <article class="course-card card" data-course-id="cyber-basics"><img class="course-image" src="assets/courses/cyber-basics.svg" alt="صورة دورة أساسيات الأمن السيبراني"><span class="course-level course-level-easy">سهل · مبتدئ</span><span class="course-track">المسار التأسيسي · 01</span><h3>أساسيات الأمن السيبراني</h3><p>مفاهيم التهديدات، حماية الحسابات، والهندسة الاجتماعية.</p><div class="course-meta"><span>5 دروس</span><span>3 ساعات</span></div><div class="course-requirement">المتطلبات: لا يوجد — البداية المثالية</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="digital-literacy"><img class="course-image" src="assets/courses/cyber-basics.svg" alt="صورة دورة الوعي الرقمي الآمن"><span class="course-level course-level-easy">سهل · مبتدئ</span><span class="course-track">المسار التأسيسي · 02</span><h3>الوعي الرقمي الآمن</h3><p>الخصوصية، الهوية الرقمية، وإدارة المخاطر في الحياة اليومية.</p><div class="course-meta"><span>5 دروس</span><span>2.5 ساعة</span></div><div class="course-requirement">المتطلبات: أساسيات الأمن السيبراني</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="network-defense"><img class="course-image" src="assets/courses/network-defense.svg" alt="صورة دورة الدفاع عن الشبكات"><span class="course-level course-level-medium">متوسط الصعوبة</span><span class="course-track">المسار المهني · 01</span><h3>الدفاع عن الشبكات</h3><p>مراقبة الشبكات، قراءة السجلات، والاستجابة للحوادث.</p><div class="course-meta"><span>5 دروس</span><span>5 ساعات</span></div><div class="course-requirement">المتطلبات: أساسيات الشبكات والوعي الرقمي</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="digital-forensics"><img class="course-image" src="assets/courses/network-defense.svg" alt="صورة دورة الأدلة الجنائية الرقمية"><span class="course-level course-level-medium">متوسط الصعوبة</span><span class="course-track">المسار المهني · 02</span><h3>الأدلة الجنائية الرقمية</h3><p>جمع الأدلة، الحفاظ على سلامتها، وتحليل آثار الحوادث الرقمية.</p><div class="course-meta"><span>5 دروس</span><span>6 ساعات</span></div><div class="course-requirement">المتطلبات: الدفاع عن الشبكات</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="secure-coding"><img class="course-image" src="assets/courses/network-defense.svg" alt="صورة دورة البرمجة الآمنة"><span class="course-level course-level-medium">متوسط الصعوبة</span><span class="course-track">المسار المهني · 03</span><h3>البرمجة الآمنة وتطبيقات الويب</h3><p>مبادئ OWASP، حماية الجلسات، والتحقق من المدخلات.</p><div class="course-meta"><span>5 دروس</span><span>5 ساعات</span></div><div class="course-requirement">المتطلبات: أساسيات الويب والبرمجة</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="ethical-hacking"><img class="course-image" src="assets/courses/ethical-hacking.svg" alt="صورة دورة الاختبار الاختراقي الأخلاقي"><span class="course-level course-level-hard">صعب · متقدم</span><span class="course-track">المسار المتقدم · 01</span><h3>الاختبار الاختراقي الأخلاقي</h3><p>منهجية الاختبار المصرح به، اكتشاف الثغرات، وكتابة التقارير.</p><div class="course-meta"><span>5 دروس</span><span>8 ساعات</span></div><div class="course-requirement">المتطلبات: الدفاع عن الشبكات والبرمجة الآمنة</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="cloud-security"><img class="course-image" src="assets/courses/ethical-hacking.svg" alt="صورة دورة أمن الحوسبة السحابية"><span class="course-level course-level-hard">صعب · متقدم</span><span class="course-track">المسار المتقدم · 02</span><h3>أمن الحوسبة السحابية</h3><p>الهوية السحابية، حماية الموارد، ومراقبة الخدمات الموزعة.</p><div class="course-meta"><span>5 دروس</span><span>7 ساعات</span></div><div class="course-requirement">المتطلبات: الدفاع عن الشبكات</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
+      <article class="course-card card" data-course-id="soc-analyst"><img class="course-image" src="assets/courses/ethical-hacking.svg" alt="صورة دورة محلل مركز العمليات الأمنية"><span class="course-level course-level-hard">صعب · متقدم</span><span class="course-track">المسار المتقدم · 03</span><h3>محلل مركز العمليات الأمنية SOC</h3><p>الفرز الأمني، تحليل التنبيهات، وكتابة تقارير الحوادث.</p><div class="course-meta"><span>5 دروس</span><span>9 ساعات</span></div><div class="course-requirement">المتطلبات: الدفاع عن الشبكات والأدلة الرقمية</div><div class="progress-track"><span class="course-progress-bar"></span></div><p class="course-progress-label">التقدم: <strong>0%</strong></p><button class="btn primary course-action" type="button">عرض الدورة</button></article>
     </div>
     <div class="certificates-card card">
       <div><h3>شهاداتي</h3><p>تظهر الشهادة هنا بعد إكمال الدورة بالكامل.</p></div>
@@ -1047,6 +1062,7 @@
 <script src="js/globe-assets.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/learning.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/attack-map.js"></script>
 </body>
 </html>

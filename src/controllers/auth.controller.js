@@ -206,6 +206,7 @@ async function me(req, res, next) {
         email: user.email,
         phone: user.phone,
         major: user.major,
+        gender: user.gender,
         role: user.role,
       },
     });
@@ -219,8 +220,8 @@ async function me(req, res, next) {
 // ---------------------------------------------------------------------
 async function updateProfile(req, res, next) {
   try {
-    const { firstName, lastName, phone, major } = req.body;
-    const updated = await usersRepo.updateProfile(req.user.id, { firstName, lastName, phone, major });
+    const { firstName, lastName, phone, major, gender } = req.body;
+    const updated = await usersRepo.updateProfile(req.user.id, { firstName, lastName, phone, major, gender });
     await recordAudit({ actorId: req.user.id, action: 'user.update_profile', entityType: 'user', entityId: req.user.id, req });
     return res.json({ user: publicUser(updated) });
   } catch (err) {

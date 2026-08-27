@@ -51,6 +51,8 @@
     if (authPanel) authPanel.style.display = 'none';
     const authTab = document.querySelector('[data-tab="auth"]');
     if (authTab) authTab.hidden = true;
+    const profileTab = document.querySelector('[data-tab="profile"]');
+    if (profileTab) profileTab.hidden = false;
   }
 
   function lockSite() {
@@ -74,6 +76,8 @@
 
   function showForms() {
     lockSite();
+    const profileTab = document.querySelector('[data-tab="profile"]');
+    if (profileTab) profileTab.hidden = true;
     $('#auth-user').hidden = true;
     document.querySelector('.auth-switcher').hidden = false;
     switchView('login');

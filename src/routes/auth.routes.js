@@ -47,6 +47,7 @@ router.patch(
     body('lastName').trim().isLength({ min: 2, max: 100 }),
     body('phone').optional({ checkFalsy: true }).trim().isMobilePhone('any'),
     body('major').optional({ checkFalsy: true }).trim().isLength({ max: 150 }),
+    body('gender').optional({ checkFalsy: true }).isIn(['male', 'female']),
   ],
   handleValidation,
   ctrl.updateProfile
