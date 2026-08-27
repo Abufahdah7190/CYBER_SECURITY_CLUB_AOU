@@ -68,8 +68,46 @@
 <button aria-controls="tab-cybermap" class="tab" data-i18n="tab.cybermap" data-tab="cybermap">خريطة الهجمات</button>
 <button aria-controls="tab-security-info" class="tab" data-i18n="tab.securityInfo" data-tab="security-info">معلومات الأمان</button>
 <button aria-controls="tab-learning-resources" class="tab" data-i18n="tab.learningResources" data-tab="learning-resources">مصادر التعلم السيبرانية</button>
+<button aria-controls="tab-auth" class="tab auth-tab" data-tab="auth">تسجيل الدخول / التسجيل</button>
 </div>
 <div class="panel-wrap">
+<section class="panel auth-panel" id="tab-auth" style="display:none">
+  <div class="auth-shell">
+    <div class="auth-heading"><span class="auth-kicker">CYBERCLUB ACCOUNT</span><h2>حسابك في نادي الأمن السيبراني</h2><p>سجّل الدخول لمتابعة حسابك، أو أنشئ حسابًا جديدًا للانضمام إلى المنصة.</p></div>
+    <div class="auth-switcher" role="tablist" aria-label="اختيار نوع العملية">
+      <button class="auth-switch active" type="button" data-auth-view="login">تسجيل الدخول</button>
+      <button class="auth-switch" type="button" data-auth-view="register">إنشاء حساب</button>
+    </div>
+    <div class="auth-message" id="auth-message" role="status" aria-live="polite"></div>
+    <form class="auth-form" id="login-form" novalidate>
+      <div class="auth-field"><label for="login-email">البريد الإلكتروني الجامعي</label><input id="login-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <div class="auth-field"><label for="login-password">كلمة المرور</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn primary auth-submit" type="submit">دخول آمن</button>
+      <button class="auth-link" type="button" data-auth-forgot-open>نسيت كلمة المرور؟</button>
+    </form>
+    <form class="auth-form" id="forgot-form" hidden novalidate>
+      <div class="auth-form-intro"><h3>استعادة كلمة المرور</h3><p>أدخل بريدك الإلكتروني الجامعي وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.</p></div>
+      <div class="auth-field"><label for="forgot-email">البريد الإلكتروني الجامعي</label><input id="forgot-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <button class="btn primary auth-submit" type="submit">إرسال رابط الاستعادة</button>
+      <button class="auth-link" type="button" data-auth-forgot-back>العودة إلى تسجيل الدخول</button>
+    </form>
+    <form class="auth-form" id="register-form" hidden novalidate>
+      <div class="auth-grid">
+        <div class="auth-field"><label for="register-first-name">الاسم الأول</label><input id="register-first-name" name="firstName" type="text" autocomplete="given-name" required minlength="2"></div>
+        <div class="auth-field"><label for="register-last-name">اسم العائلة</label><input id="register-last-name" name="lastName" type="text" autocomplete="family-name" required minlength="2"></div>
+      </div>
+      <div class="auth-field"><label for="register-email">البريد الإلكتروني الجامعي</label><input id="register-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <div class="auth-grid">
+        <div class="auth-field"><label for="register-phone">رقم الهاتف</label><input id="register-phone" name="phone" type="tel" autocomplete="tel" required placeholder="05xxxxxxxx"></div>
+        <div class="auth-field"><label for="register-major">التخصص</label><input id="register-major" name="major" type="text" required minlength="2" placeholder="الأمن السيبراني"></div>
+      </div>
+      <div class="auth-field"><label for="register-password">كلمة المرور</label><input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="10"><small>10 أحرف على الأقل، وتتضمن حرفًا كبيرًا وحرفًا صغيرًا ورقمًا.</small></div>
+      <div class="auth-field"><label for="register-password-confirm">تأكيد كلمة المرور</label><input id="register-password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" required minlength="10"></div>
+      <button class="btn primary auth-submit" type="submit">إنشاء الحساب</button>
+    </form>
+    <div class="auth-user" id="auth-user" hidden><p>تم تسجيل الدخول باسم <strong id="auth-user-name"></strong>.</p><button class="btn ghost" id="logout-button" type="button">تسجيل الخروج</button></div>
+  </div>
+</section>
 <section class="panel" id="tab-home" style="display:block">
 <div>
 <h2 data-i18n="home.title" style="color: var(--accent2); margin-bottom: 10px;">تعريف النادي وأهدافه</h2>
@@ -961,6 +999,7 @@
 <script src="js/file-analysis.js"></script>
 <script src="js/script.js"></script>
 <script src="js/globe-assets.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/attack-map.js"></script>
 </body>
 </html>
