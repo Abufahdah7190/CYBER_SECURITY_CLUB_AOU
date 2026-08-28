@@ -36,7 +36,8 @@ router.post(
 );
 
 router.post('/refresh', ctrl.refresh);
-router.post('/logout', requireAuth, ctrl.logout);
+// Logout must remain public so expired access tokens cannot prevent cookie cleanup.
+router.post('/logout', ctrl.logout);
 router.get('/me', requireAuth, ctrl.me);
 
 router.patch(
@@ -47,6 +48,7 @@ router.patch(
     body('lastName').trim().isLength({ min: 2, max: 100 }),
     body('phone').optional({ checkFalsy: true }).trim().isMobilePhone('any'),
     body('major').optional({ checkFalsy: true }).trim().isLength({ max: 150 }),
+    body('gender').optional({ checkFalsy: true }).isIn(['male', 'female']),
   ],
   handleValidation,
   ctrl.updateProfile

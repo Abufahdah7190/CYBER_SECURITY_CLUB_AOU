@@ -470,33 +470,6 @@
     "t43": "Security Awareness",
     "t44": "Learn how to recognize threats"
   },
-  "courses": {
-    "title": "Courses",
-    "intro": "Choose a learning path and continue your cybersecurity journey.",
-    "foundation": "Foundation Path",
-    "foundationDesc": "Security awareness, digital safety, and network basics",
-    "professional": "Professional Path",
-    "professionalDesc": "Defense, analysis, and secure application development",
-    "advanced": "Advanced Path",
-    "advancedDesc": "Ethical testing, cloud security, and security operations",
-    "open": "Open course",
-    "continue": "Continue learning",
-    "lessons": "lessons",
-    "hours": "hours",
-    "levelEasy": "Beginner",
-    "levelMedium": "Intermediate",
-    "levelHard": "Advanced",
-    "courses": {
-      "cyber-basics": "Introduction to Cybersecurity",
-      "digital-literacy": "Digital Safety Awareness",
-      "network-defense": "Network Security Fundamentals",
-      "digital-forensics": "Digital Forensics",
-      "secure-coding": "Web Application Security and OWASP",
-      "ethical-hacking": "Ethical Hacking",
-      "cloud-security": "Cloud Security Essentials",
-      "soc-analyst": "Threat Intelligence and SOC Analysis"
-    }
-  },
   "footer": {
     "suggestions": "Suggestions & Inquiries",
     "joinUs": "Join Us",
