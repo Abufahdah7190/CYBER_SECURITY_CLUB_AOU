@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>حجز موعد — مستشفى المستقبل</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/security.js"></script>
+  <script src="js/notifications.js"></script>
+  <style>
+    .form-field {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    
+    .form-field.error input,
+    .form-field.error select {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .field-error {
+      color: var(--danger);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    
+    .secure-form::before {
+      content: '🔒 نموذج آمن';
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      background: var(--success);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius);
+      font-size: 0.75rem;
+      z-index: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grid input,
+      .form-grid select {
+        font-size: 16px;
+        padding: 1rem;
+        min-height: 48px;
+      }
+      
+      .btn {
+        width: 100%;
+        min-height: 50px;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-name">مستشفى المستقبل</span>
+      </a>
+    </div>
+  </header>
+  
+  <div class="breadcrumbs">
+    <div class="container">
+      <ol>
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><span>حجز موعد</span></li>
+      </ol>
+    </div>
+  </div>
+  
+  <div class="page-header">
+    <div class="container">
+      <h1>حجز موعد</h1>
+      <p>احجز موعدك مع أفضل الأطباء المتخصصين</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="form-container secure-form">
+        <form id="bookingForm">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>الاسم الكامل
+                <input name="name" required placeholder="أدخل اسمك الكامل">
+              </label>
+            </div>
+            <div class="form-field">
+              <label>رقم الهاتف
+                <input name="phone" required placeholder="05xxxxxxxx">
+              </label>
+            </div>
+            <div class="form-field">
+              <label>البريد الإلكتروني
+                <input name="email" type="email" placeholder="example@email.com">
+              </label>
+            </div>
+            <div class="form-field">
+              <label>القسم الطبي
+                <select name="department" id="department" required>
+                  <option value="">اختر القسم</option>
+                  <option value="الطوارئ">الطوارئ</option>
+                  <option value="أمراض القلب">أمراض القلب</option>
+                  <option value="الأطفال">الأطفال</option>
+                  <option value="الطب النفسي">الطب النفسي</option>
+                  <option value="طب الأسنان">طب الأسنان</option>
+                  <option value="العيون">العيون</option>
+                  <option value="الجلدية">الجلدية</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>الطبيب المختص
+                <select id="doctorField" name="doctor_id" required disabled>
+                  <option value="">اختر الطبيب</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          
+          <div id="dateTimeSection" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--gray-700);">اختيار التاريخ والوقت</h3>
+            <div style="margin-bottom: 1rem;">
+              <label>التاريخ المطلوب
+                <input type="date" id="dateInput" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius);">
+              </label>
+            </div>
+            <div id="slotContainer" style="margin-bottom: 1rem;"></div>
+          </div>
+          
+          <div style="margin-bottom: 2rem;">
+            <label style="display:block; margin-bottom:0.5rem;">ملاحظات إضافية</label>
+            <textarea name="notes" rows="3" placeholder="أي ملاحظات أو تفاصيل إضافية" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-family: inherit;"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button class="btn primary" type="submit">تأكيد الحجز</button>
+          </div>
+          <div id="formMsg" class="form-msg" style="margin-top: 1rem; text-align: center;"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script>
+    async function findDoctorBySlug(slug){
+      const res = await fetch('/api/doctors/slug/' + encodeURIComponent(slug));
+      if(!res.ok) return null; 
+      return res.json();
+    }
+    
+    // Generate mock time slots for fallback
+    function generateMockSlots(date) {
+      const slots = [];
+      const selectedDate = new Date(date);
+      const today = new Date();
+      
+      // Skip past dates
+      if(selectedDate < today.setHours(0,0,0,0)) return [];
+      
+      // Generate morning slots (9 AM - 12 PM)
+      for(let hour = 9; hour < 12; hour++) {
+        for(let minute = 0; minute < 60; minute += 30) {
+          const slotTime = new Date(selectedDate);
+          slotTime.setHours(hour, minute, 0, 0);
+          
+          // Skip past times for today
+          if(selectedDate.toDateString() === today.toDateString() && slotTime <= new Date()) {
+            continue;
+          }
+          
+          slots.push({
+            id: `mock_${hour}_${minute}`,
+            start_time: slotTime.toISOString(),
+            end_time: new Date(slotTime.getTime() + 30*60000).toISOString()
+          });
+        }
+      }
+      
+      // Generate evening slots (4 PM - 8 PM)
+      for(let hour = 16; hour < 20; hour++) {
+        for(let minute = 0; minute < 60; minute += 30) {
+          const slotTime = new Date(selectedDate);
+          slotTime.setHours(hour, minute, 0, 0);
+          
+          // Skip past times for today
+          if(selectedDate.toDateString() === today.toDateString() && slotTime <= new Date()) {
+            continue;
+          }
+          
+          slots.push({
+            id: `mock_${hour}_${minute}`,
+            start_time: slotTime.toISOString(),
+            end_time: new Date(slotTime.getTime() + 30*60000).toISOString()
+          });
+        }
+      }
+      
+      return slots;
+    }
+    
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const params = new URLSearchParams(location.search);
+      const docSlug = params.get('doctor');
+      let currentDoctor = null;
+
+      // Static doctors data
+      const doctorsByDepartment = {
+        "الطوارئ": [
+          { id: 5, name: "د. سامي هلال", slug: "sami-hilal", specialty: "الطوارئ" },
+          { id: 6, name: "د. رانيا يوسف", slug: "rania-youssef", specialty: "الطوارئ" },
+          { id: 7, name: "د. عمر فاروق", slug: "omar-farouk", specialty: "الطوارئ" }
+        ],
+        "أمراض القلب": [
+          { id: 1, name: "د. أحمد العلي", slug: "ahmed-alali", specialty: "أمراض القلب" },
+          { id: 3, name: "د. خالد عثمان", slug: "khaled-othman", specialty: "أمراض القلب" },
+          { id: 4, name: "د. منى زكي", slug: "mona-zaki", specialty: "أمراض القلب" }
+        ],
+        "الأطفال": [
+          { id: 8, name: "د. محمد سمير", slug: "mohamed-samir", specialty: "الأطفال" },
+          { id: 9, name: "د. ليلى حسن", slug: "layla-hassan", specialty: "الأطفال" },
+          { id: 10, name: "د. هدى علي", slug: "huda-ali", specialty: "الأطفال" }
+        ],
+        "الطب النفسي": [
+          { id: 11, name: "د. ياسر كمال", slug: "yasser-kamal", specialty: "الطب النفسي" },
+          { id: 12, name: "د. نهى سالم", slug: "noha-salem", specialty: "الطب النفسي" },
+          { id: 13, name: "د. طارق محمود", slug: "tarek-mahmoud", specialty: "الطب النفسي" }
+        ],
+        "طب الأسنان": [
+          { id: 2, name: "د. سارة النجار", slug: "sara-najjar", specialty: "طب الأسنان" },
+          { id: 14, name: "د. علي العنزي", slug: "ali-alanazi", specialty: "طب الأسنان" },
+          { id: 15, name: "د. بدر الحربي", slug: "bader-alharbi", specialty: "طب الأسنان" }
+        ],
+        "العيون": [
+          { id: 16, name: "د. يوسف الزهراني", slug: "yousef-alzahrani", specialty: "العيون" },
+          { id: 17, name: "د. فيصل الغامدي", slug: "faisal-alghamdi", specialty: "العيون" }
+        ],
+        "الجلدية": [
+          { id: 18, name: "د. هدى السبيعي", slug: "huda-alsubaie", specialty: "الجلدية" },
+          { id: 19, name: "د. رنا الدوسري", slug: "rana-aldosari", specialty: "الجلدية" }
+        ]
+      };
+
+      // Load doctors and handle filtering
+      const doctorSelect = document.getElementById('doctorField');
+      const deptSelect = document.getElementById('department');
+      
+      console.log('Doctor select element:', doctorSelect);
+      console.log('Department select element:', deptSelect);
+      console.log('Initial doctor select disabled state:', doctorSelect.disabled);
+
+      // Handle department change
+      deptSelect.addEventListener('change', () => {
+        const selectedDept = deptSelect.value;
+        console.log('Department selected:', selectedDept);
+        
+        doctorSelect.innerHTML = '<option value="">اختر الطبيب</option>';
+        
+        if(selectedDept && doctorsByDepartment[selectedDept]){
+          console.log('Doctors found:', doctorsByDepartment[selectedDept]);
+          doctorsByDepartment[selectedDept].forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name;
+            doctorSelect.appendChild(opt);
+            console.log('Added doctor option:', d.name);
+          });
+          doctorSelect.disabled = false;
+          console.log('Doctor select enabled, disabled state:', doctorSelect.disabled);
+        } else {
+          doctorSelect.disabled = true;
+          console.log('Doctor select disabled, no doctors found for department:', selectedDept);
+        }
+        
+        currentDoctor = null;
+        // Clear slots when department changes
+        const slotContainer = document.getElementById('slotContainer');
+        if(slotContainer) slotContainer.innerHTML = '';
+      });
+      
+      // Handle doctor selection
+      doctorSelect.addEventListener('change', () => {
+        const doctorId = doctorSelect.value;
+        
+        if(doctorId){
+          // Find selected doctor
+          for(const dept in doctorsByDepartment){
+            const found = doctorsByDepartment[dept].find(d => d.id == doctorId);
+            if(found){
+              currentDoctor = found;
+              break;
+            }
+          }
+        } else {
+          currentDoctor = null;
+        }
+        
+        // Clear slots when doctor changes
+        const slotContainer = document.getElementById('slotContainer');
+        if(slotContainer) slotContainer.innerHTML = '';
+      });
+      
+      // Handle URL parameter for pre-selected doctor
+      if(docSlug){
+        let targetDoctor = null;
+        const foundDept = Object.keys(doctorsByDepartment).find(dept => 
+          (targetDoctor = doctorsByDepartment[dept].find(d => d.slug === docSlug))
+        );
+        
+        if(foundDept && targetDoctor){
+          deptSelect.value = foundDept;
+          deptSelect.dispatchEvent(new Event('change'));
+          setTimeout(() => {
+            doctorSelect.value = targetDoctor.id;
+            doctorSelect.dispatchEvent(new Event('change'));
+          }, 100);
+        }
+      }
+
+      const dateInput = document.getElementById('dateInput');
+      const slotContainer = document.getElementById('slotContainer');
+      
+      // Set minimum date to today
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+
+      dateInput.addEventListener('change', async ()=>{
+        slotContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--gray-500);">جارٍ التحميل...</div>';
+        const date = dateInput.value;
+        
+        if(!currentDoctor){ 
+          slotContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--warning);">يرجى تحديد الطبيب أولاً</div>'; 
+          return;
+        }
+        
+        try {
+          const res = await fetch(`/api/doctors/${currentDoctor.id}/slots?date=${date}`);
+          let slots = [];
+          
+          if(res.ok){
+            slots = await res.json();
+          } else {
+            // Fallback: generate mock slots if server fails
+            slots = generateMockSlots(date);
+          }
+          
+          if(!slots.length){ 
+            slotContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--gray-500);">لا توجد مواعيد متاحة لهذا اليوم</div>'; 
+            return;
+          }
+          
+          slotContainer.innerHTML = '<h4 style="margin-bottom: 1rem; color: var(--gray-700);">المواعيد المتاحة:</h4>';
+          const slotsGrid = document.createElement('div');
+          slotsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem;';
+          
+          slots.forEach(s=>{
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn ghost';
+            btn.style.cssText = 'padding: 0.75rem; font-size: 0.875rem;';
+            btn.textContent = new Date(s.start_time).toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'});
+            
+            btn.onclick = ()=>{
+              // Remove selection from other buttons
+              slotsGrid.querySelectorAll('button').forEach(b => {
+                b.classList.remove('primary');
+                b.classList.add('ghost');
+              });
+              
+              // Highlight selected button
+              btn.classList.remove('ghost');
+              btn.classList.add('primary');
+              
+              
+              // Set hidden appointment_time field
+              let timeField = document.getElementById('appointmentTime');
+              if(!timeField){
+                timeField = document.createElement('input');
+                timeField.type = 'hidden';
+                timeField.id = 'appointmentTime';
+                timeField.name = 'appointment_time';
+                document.getElementById('bookingForm').appendChild(timeField);
+              }
+              timeField.value = s.start_time;
+            };
+            
+            slotsGrid.appendChild(btn);
+          });
+          
+          slotContainer.appendChild(slotsGrid);
+        } catch (error) {
+          // Fallback: generate mock slots if network fails
+          const mockSlots = generateMockSlots(date);
+          if(!mockSlots.length){ 
+            slotContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--gray-500);">لا توجد مواعيد متاحة لهذا اليوم</div>'; 
+            return;
+          }
+          
+          slotContainer.innerHTML = '<h4 style="margin-bottom: 1rem; color: var(--gray-700);">المواعيد المتاحة:</h4>';
+          const slotsGrid = document.createElement('div');
+          slotsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem;';
+          
+          mockSlots.forEach(s=>{
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn ghost';
+            btn.style.cssText = 'padding: 0.75rem; font-size: 0.875rem;';
+            btn.textContent = new Date(s.start_time).toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'});
+            
+            btn.onclick = ()=>{
+              slotsGrid.querySelectorAll('button').forEach(b => {
+                b.classList.remove('primary');
+                b.classList.add('ghost');
+              });
+              btn.classList.remove('ghost');
+              btn.classList.add('primary');
+              
+              let timeField = document.getElementById('appointmentTime');
+              if(!timeField){
+                timeField = document.createElement('input');
+                timeField.type = 'hidden';
+                timeField.id = 'appointmentTime';
+                timeField.name = 'appointment_time';
+                document.getElementById('bookingForm').appendChild(timeField);
+              }
+              timeField.value = s.start_time;
+            };
+            
+            slotsGrid.appendChild(btn);
+          });
+          
+          slotContainer.appendChild(slotsGrid);
+        }
+      });
+
+      const form = document.getElementById('bookingForm');
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const formMsg = document.getElementById('formMsg');
+      
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جارٍ الحجز...';
+        formMsg.textContent = '';
+        
+        try {
+          const fd = new FormData(form);
+          const payload = {
+            name: fd.get('name'),
+            phone: fd.get('phone'),
+            email: fd.get('email'),
+            department: fd.get('department'),
+            notes: fd.get('notes'),
+            doctor_id: fd.get('doctor_id'),
+            appointment_time: fd.get('appointment_time')
+          };
+          
+          // Save appointment to localStorage for demo
+          const appointments = JSON.parse(localStorage.getItem('user_appointments') || '[]');
+          const newAppointment = {
+            id: Date.now(),
+            ...payload,
+            status: 'confirmed', // تغيير الحالة إلى مؤكد مباشرة للتجربة
+            created_at: new Date().toISOString(),
+            doctor_name: currentDoctor ? currentDoctor.name : 'طبيب غير محدد'
+          };
+          appointments.push(newAppointment);
+          localStorage.setItem('user_appointments', JSON.stringify(appointments));
+          
+          // إرسال تأكيد الحجز بالبريد الإلكتروني
+          if (payload.email && window.notificationSystem) {
+            await window.notificationSystem.sendBookingConfirmation(newAppointment);
+          }
+          
+          // Always simulate successful booking for demo purposes
+          formMsg.style.color = 'var(--success)';
+          formMsg.innerHTML = `
+            <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+              <h4 style="color: #065f46; margin: 0 0 0.5rem 0;">✅ تم تأكيد الحجز بنجاح!</h4>
+              <p style="color: #047857; margin: 0;">تم إرسال تفاصيل الموعد إلى بريدك الإلكتروني</p>
+              <p style="color: #047857; margin: 0.5rem 0 0 0; font-size: 0.9rem;">سيتم إرسال تذكير نصي قبل الموعد بيوم واحد</p>
+            </div>
+          `;
+          setTimeout(() => {
+            location.href = 'payment.html?appointmentId=' + newAppointment.id;
+          }, 2500);
+        } catch (error) {
+          formMsg.style.color = 'var(--danger)';
+          formMsg.textContent = 'خطأ في الحجز: ' + error.message;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'تأكيد الحجز';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

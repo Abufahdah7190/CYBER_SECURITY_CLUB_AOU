@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>بوابة الدفع الوهمية</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>.card{max-width:720px;margin:40px auto;padding:20px;background:#fff;border-radius:12px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>محاكاة مزود الدفع</h2>
+    <p id="info">جارٍ التحميل...</p>
+    <button id="pay" class="btn primary">إتمام الدفع (محاكاة)</button>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const params = new URLSearchParams(location.search); const pid = params.get('paymentId');
+      document.getElementById('info').innerText = 'معرّف الدفع: ' + pid;
+      document.getElementById('pay').addEventListener('click', async ()=>{
+        // call payments endpoint to complete
+        const res = await fetch('/api/payments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({appointment_id: pid, amount:100})});
+        const j = await res.json(); if(j && j.ok){ alert('تم الدفع (محاكاة)'); location.href = '/'; } else alert('خطأ');
+      });
+    });
+  </script>
+</body>
+</html>

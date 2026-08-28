@@ -1,0 +1,22 @@
+:root{--bg:#f7fbff;--card:#fff;--primary:#0077ff;--muted:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:#07203a}
+.container{max-width:1100px;margin:0 auto;padding:18px}
+.admin-header{background:#fff;padding:12px 0;border-bottom:1px solid #eef2f7}
+.admin-header h1{margin:0;display:inline-block}
+.admin-header nav{float:left}
+.admin-header button{margin-left:8px;padding:8px 12px;border-radius:8px;border:0;background:var(--primary);color:#fff;cursor:pointer}
+.admin-main{padding:22px 0}
+.panel{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+.hidden{display:none}
+/* login panel styles */
+.login-panel input{display:block;margin:8px 0;padding:8px;border-radius:8px;border:1px solid #e6eef6;width:100%;max-width:420px}
+.login-panel button{background:var(--primary);color:#fff;border:0;padding:8px 12px;border-radius:8px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:right}
+button.action{padding:6px 8px;border-radius:8px;border:0;cursor:pointer}
+button.confirm{background:#00a86b;color:#fff}
+button.delete{background:#ef4444;color:#fff}
+form#doctorForm{display:flex;gap:8px;flex-wrap:wrap}
+form#doctorForm input, form#doctorForm textarea{padding:8px;border-radius:8px;border:1px solid #e6eef6}
+form#doctorForm button{background:var(--primary);color:#fff;border:0;padding:8px 12px;border-radius:8px}

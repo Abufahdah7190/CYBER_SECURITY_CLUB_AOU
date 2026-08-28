@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>الدفع — مستشفى المستقبل</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-name">مستشفى المستقبل</span>
+      </a>
+    </div>
+  </header>
+  
+  <div class="breadcrumbs">
+    <div class="container">
+      <ol>
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="booking.html">حجز موعد</a></li>
+        <li><span>الدفع</span></li>
+      </ol>
+    </div>
+  </div>
+  
+  <div class="page-header">
+    <div class="container">
+      <h1>إتمام الدفع</h1>
+      <p>اختر طريقة الدفع المناسبة لك</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="form-container" id="content">
+        جارٍ التحميل...
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const params = new URLSearchParams(location.search);
+      const apId = params.get('appointmentId');
+      
+      if(!apId){
+        document.getElementById('content').innerHTML = `
+          <h2>معرّف الحجز مفقود</h2>
+          <p>لم يتم العثور على معرّف الحجز</p>
+          <a href="booking.html" class="btn primary">عودة للحجز</a>
+        `;
+        return;
+      }
+      
+      // Mock appointment data
+      const mockAppointment = {
+        id: apId,
+        patient_name: 'مريض جديد',
+        phone: '05xxxxxxxx',
+        department: 'عام',
+        doctor_name: 'د. محمد أحمد',
+        appointment_time: new Date().toLocaleDateString('ar-SA')
+      };
+      
+      const amount = 150.00; // مبلغ ثابت
+      
+      document.getElementById('content').innerHTML = `
+        <h2>دفع الحجز #${mockAppointment.id}</h2>
+        <div style="background: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; color: var(--gray-700);">تفاصيل الحجز</h3>
+          <p><strong>المريض:</strong> ${mockAppointment.patient_name}</p>
+          <p><strong>الهاتف:</strong> ${mockAppointment.phone}</p>
+          <p><strong>الطبيب:</strong> ${mockAppointment.doctor_name}</p>
+          <p><strong>التاريخ:</strong> ${mockAppointment.appointment_time}</p>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div style="font-size: 1.125rem; margin-bottom: 0.5rem;">المبلغ المطلوب:</div>
+          <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">${amount.toFixed(2)} ريال</div>
+        </div>
+        
+        <div style="margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; color: var(--gray-700);">اختر طريقة الدفع:</h3>
+          <div class="payment-grid" style="display: grid; gap: 1rem;">
+            <button id="payDirect" class="btn primary payment-btn" style="padding: 1rem; font-size: 1rem; min-height: 60px;">
+              💳 دفع مباشر (سريع)
+            </button>
+            <button id="payApplePay" class="btn ghost payment-btn" style="padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 60px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              Apple Pay
+            </button>
+            <button id="payMasterCard" class="btn ghost payment-btn" style="padding: 1rem; font-size: 1rem; min-height: 60px;">
+              💳 MasterCard
+            </button>
+            <button id="payCash" class="btn ghost payment-btn" style="padding: 1rem; font-size: 1rem; min-height: 60px;">
+              💵 دفع نقداً عند الوصول
+            </button>
+            <button id="payProvider" class="btn ghost payment-btn" style="padding: 1rem; font-size: 1rem; min-height: 60px;">
+              🏦 انتقال إلى بوابة الدفع
+            </button>
+          </div>
+        </div>
+        
+        <div id="msg" style="text-align: center; margin-top: 1rem;"></div>
+      `;
+      
+      // Payment handlers with enhanced security and UX
+      function handlePayment(method, methodName) {
+        const btn = document.getElementById(method);
+        const msg = document.getElementById('msg');
+        
+        // Security validation
+        if (!apId || apId.length < 5) {
+          msg.innerHTML = '<div class="alert error">خطأ: معرف الحجز غير صحيح</div>';
+          return;
+        }
+        
+        // Disable all payment buttons
+        document.querySelectorAll('.payment-btn').forEach(b => {
+          b.disabled = true;
+          b.style.opacity = '0.6';
+        });
+        
+        // Add loading state
+        btn.classList.add('loading');
+        btn.innerHTML = '<span class="loading-spinner"></span> جارٍ المعالجة...';
+        
+        // Show processing message
+        msg.innerHTML = '<div class="alert info">جارٍ معالجة عملية الدفع... يرجى عدم إغلاق الصفحة</div>';
+        
+        // Simulate payment processing
+        setTimeout(() => {
+          try {
+            // Update appointment status in localStorage with timestamp
+            const appointments = JSON.parse(localStorage.getItem('user_appointments') || '[]');
+            const updatedAppointments = appointments.map(a => 
+              a.id == apId ? {
+                ...a, 
+                status: 'confirmed',
+                payment_method: methodName,
+                payment_date: new Date().toISOString(),
+                confirmation_code: 'CONF-' + Date.now()
+              } : a
+            );
+            localStorage.setItem('user_appointments', JSON.stringify(updatedAppointments));
+            
+            // Success message with confirmation details
+            const confirmationCode = 'CONF-' + Date.now();
+            msg.innerHTML = `
+              <div class="alert success">
+                <h4 style="margin-bottom: 0.5rem;">✓ تم الدفع بنجاح!</h4>
+                <p>تم تأكيد حجزك بنجاح عبر ${methodName}.</p>
+                <p><strong>رقم التأكيد:</strong> ${confirmationCode}</p>
+                <p>سيتم إرسال تفاصيل الموعد عبر الرسائل النصية.</p>
+              </div>
+              <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                <a href="index.html" class="btn primary">عودة للصفحة الرئيسية</a>
+                <a href="patient.html" class="btn ghost">عرض حجوزاتي</a>
+              </div>
+            `;
+            
+            // Hide all payment buttons
+            document.querySelectorAll('.payment-btn').forEach(b => b.style.display = 'none');
+            
+            // Send confirmation (simulate)
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('تم تأكيد الحجز', {
+                body: `تم دفع ${amount.toFixed(2)} ريال بنجاح`,
+                icon: '/assets/favicon.svg'
+              });
+            }
+            
+          } catch (error) {
+            console.error('Payment processing error:', error);
+            msg.innerHTML = '<div class="alert error">حدث خطأ في معالجة الدفع. يرجى المحاولة مرة أخرى.</div>';
+            
+            // Re-enable buttons on error
+            document.querySelectorAll('.payment-btn').forEach(b => {
+              b.disabled = false;
+              b.style.opacity = '1';
+              b.classList.remove('loading');
+            });
+          }
+        }, 2000 + Math.random() * 1000); // Random delay for realism
+      }
+      
+      // Direct payment
+      document.getElementById('payDirect').addEventListener('click', () => {
+        handlePayment('payDirect', 'الدفع المباشر');
+      });
+      
+      // Apple Pay
+      document.getElementById('payApplePay').addEventListener('click', () => {
+        handlePayment('payApplePay', 'Apple Pay');
+      });
+      
+      // MasterCard
+      document.getElementById('payMasterCard').addEventListener('click', () => {
+        handlePayment('payMasterCard', 'MasterCard');
+      });
+      
+      // Cash payment
+      document.getElementById('payCash').addEventListener('click', () => {
+        handlePayment('payCash', 'الدفع النقدي');
+      });
+      
+      // Payment provider redirect
+      document.getElementById('payProvider').addEventListener('click', () => {
+        location.href = 'mockpay.html?paymentId=' + apId;
+      });
+    });
+  </script>
+</body>
+</html>
