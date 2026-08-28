@@ -1,105 +1,31 @@
 (() => {
   'use strict';
-  const API_BASE = (window.CYBERCLUB_API_BASE || '').replace(/\/$/, '');
-  const AUTH_URL = `${API_BASE}/api/auth`;
-  const LEARNING_URL = `${API_BASE}/api/learning`;
+  const AUTH_URL = `${(window.CYBERCLUB_API_BASE || '').replace(/\/$/, '')}/api/auth`;
+  const USER_PROFILE_URL = `${(window.CYBERCLUB_API_BASE || '').replace(/\/$/, '')}/api/user/profile`;
   const $ = (selector) => document.querySelector(selector);
-  const escapeHtml = (value) => String(value ?? '').replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]));
-
-  async function request(url, options = {}) {
-    const response = await fetch(url, { ...options, credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    if (!response.ok) throw new Error(data.error || 'تعذر تحميل بيانات الملف الشخصي.');
-    return data;
-  }
-
-  function setMessage(text, type = '') {
-    const box = $('#profile-message');
-    if (!box) return;
-    box.textContent = text;
-    box.className = `profile-message${type ? ` ${type}` : ''}`;
-  }
-
-  function fillUser(user) {
-    if (!user) return;
-    $('#profile-first-name').value = user.firstName || '';
-    $('#profile-last-name').value = user.lastName || '';
-    $('#profile-email').value = user.email || '';
-    $('#profile-phone').value = user.phone || '';
-    $('#profile-major').value = user.major || '';
-    $('#profile-gender').value = user.gender || '';
-    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-    $('#profile-avatar').textContent = (fullName || user.email || 'ط').slice(0, 1);
-  }
-
-  function renderCertificates(certificates = []) {
-    const list = $('#profile-certificates-list');
-    const summary = $('#profile-certificates-summary');
-    if (!list || !summary) return;
-    summary.textContent = certificates.length ? `${certificates.length} شهادة محفوظة في حسابك` : 'لم تصدر لك شهادات بعد';
-    if (!certificates.length) {
-      list.innerHTML = '<div class="profile-empty">أكمل الدورات بنسبة 80% أو أكثر لتظهر شهاداتك هنا.</div>';
-      return;
-    }
-    list.innerHTML = certificates.map((certificate) => {
-      const verifyUrl = `${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}`;
-      return `<article class="profile-certificate-item"><div class="profile-certificate-mark">✓</div><div class="profile-certificate-info"><h4>${escapeHtml(certificate.courseName)}</h4><p>رمز الشهادة: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><small>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')}</small></div><div class="profile-certificate-actions"><a class="btn small" href="${verifyUrl}" target="_blank" rel="noopener">عرض والتحقق</a><button class="btn small ghost" type="button" data-copy-certificate="${escapeHtml(certificate.certificateCode)}">نسخ الرمز</button></div></article>`;
-    }).join('');
-    list.querySelectorAll('[data-copy-certificate]').forEach((button) => button.addEventListener('click', async () => {
-      await navigator.clipboard?.writeText(button.dataset.copyCertificate);
-      const old = button.textContent;
-      button.textContent = 'تم النسخ';
-      setTimeout(() => { button.textContent = old; }, 1400);
-    }));
-  }
-
-  async function loadProfile() {
-    try {
-      const [userData, learningData] = await Promise.all([request(`${AUTH_URL}/me`), request(`${LEARNING_URL}/progress`)]);
-      fillUser(userData.user);
-      renderCertificates(learningData.certificates || []);
-      setMessage('');
-    } catch (error) {
-      setMessage(error.message, 'error');
-    }
-  }
-
-  async function updateProfile(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    if (!form.reportValidity()) return;
-    const button = form.querySelector('button[type="submit"]');
-    const oldText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'جارٍ الحفظ...';
-    try {
-      const payload = Object.fromEntries(new FormData(form).entries());
-      const data = await request(`${AUTH_URL}/profile`, { method: 'PATCH', body: JSON.stringify(payload) });
-      fillUser(data.user);
-      setMessage('تم تحديث بيانات ملفك بنجاح.', 'success');
-    } catch (error) {
-      setMessage(error.message, 'error');
-    } finally {
-      button.disabled = false;
-      button.textContent = oldText;
-    }
-  }
-
-  const isStandalonePage = document.body?.classList.contains('profile-page');
-
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const request = async (url, options = {}) => { const response = await fetch(url, { ...options, credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'تعذر تنفيذ العملية.'); return data; };
+  function setMessage(text, type = '') { const box = $('#profile-message'); if (!box) return; box.textContent = text || ''; box.className = `profile-message${type ? ` ${type}` : ''}`; }
+  function fillUser(user) { if (!user) return; $('#profile-first-name') && ($('#profile-first-name').value = user.firstName || ''); $('#profile-last-name') && ($('#profile-last-name').value = user.lastName || ''); $('#profile-email') && ($('#profile-email').value = user.email || ''); $('#profile-phone') && ($('#profile-phone').value = user.phone || ''); $('#profile-major') && ($('#profile-major').value = user.major || ''); $('#profile-gender') && ($('#profile-gender').value = user.gender || ''); const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'طالب'; if ($('#profile-full-name')) $('#profile-full-name').textContent = fullName; if ($('#profile-role')) $('#profile-role').textContent = user.role === 'admin' ? 'مسؤول / Admin' : 'طالب / Student'; if ($('#profile-joined')) $('#profile-joined').textContent = `تاريخ الانضمام: ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-SA') : '—'}`; if ($('#profile-avatar')) $('#profile-avatar').textContent = fullName.slice(0, 1); }
+  function renderStats(stats = {}) { if ($('#stat-enrolled')) $('#stat-enrolled').textContent = stats.enrolledCourses || 0; if ($('#stat-completed')) $('#stat-completed').textContent = stats.completedCourses || 0; if ($('#stat-certificates')) $('#stat-certificates').textContent = stats.certificatesEarned || 0; }
+  function certificatePreview(certificate) { const verifyUrl = `${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}`; const modal = document.createElement('div'); modal.className = 'certificate-modal'; modal.innerHTML = `<div class="certificate-sheet"><div class="certificate-logos"><img src="assets/branding/aou-logo.png" alt="AOU"><img src="assets/branding/cyberclub-logo.png" alt="Cyber Security Club"></div><h2>شهادة إتمام ومشاركة</h2><p>يشهد نادي الأمن السيبراني بالجامعة العربية المفتوحة بأن الطالب/ـة:</p><h3>${escapeHtml(certificate.studentName || '')}</h3><p>قد أتم/ـت بنجاح الدورة التدريبية بعنوان:</p><h3>${escapeHtml(certificate.courseName)}</h3><p class="certificate-code">رمز الشهادة: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><p>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')}</p><p><a href="${verifyUrl}" target="_blank" rel="noopener">فتح رابط التحقق</a></p><div class="certificate-actions-print"><button class="btn primary print-certificate" type="button">طباعة / حفظ PDF</button><button class="btn ghost close-certificate" type="button">إغلاق</button></div></div>`; document.body.appendChild(modal); modal.querySelector('.print-certificate').onclick = () => window.print(); modal.querySelector('.close-certificate').onclick = () => modal.remove(); }
+  function renderCertificates(certificates = []) { const list = $('#profile-certificates-list'); const summary = $('#profile-certificates-summary'); if (!list) return; if (summary) summary.textContent = certificates.length ? `${certificates.length} شهادة محفوظة في حسابك` : 'لم تحصل على شهادات بعد'; if (!certificates.length) { list.innerHTML = '<div class="profile-empty">لم تحصل على شهادات بعد، أكمل دوراتك الأولى لإصدار شهادتك!</div>'; return; } list.innerHTML = certificates.map((certificate) => `<article class="profile-certificate-item"><div class="profile-certificate-mark">✓</div><div class="profile-certificate-info"><h4>${escapeHtml(certificate.courseName)}</h4><p>المعرف الفريد: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><small>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')}</small></div><div class="profile-certificate-actions"><button class="btn small" type="button" data-preview-certificate="${escapeHtml(certificate.certificateCode)}">معاينة / تحميل</button><a class="btn small ghost" href="${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}" target="_blank" rel="noopener">تحقق</a></div></article>`).join(''); list.querySelectorAll('[data-preview-certificate]').forEach((button) => button.addEventListener('click', () => certificatePreview(certificates.find((item) => item.certificateCode === button.dataset.previewCertificate)))); }
+  async function loadProfile() { try { const data = await request(USER_PROFILE_URL); fillUser(data.user); renderStats(data.stats); renderCertificates(data.certificates); document.body.classList.remove('auth-locked'); setMessage(''); } catch (error) { if (document.body.classList.contains('profile-page')) window.location.replace('index.html?auth=required&return=profile.html'); else setMessage(error.message, 'error'); } }
+  async function updateProfile(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; try { const data = await request(`${AUTH_URL}/profile`, { method: 'PATCH', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); fillUser(data.user); setMessage('تم تحديث بيانات ملفك بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } }
+  async function changePassword(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; const button = form.querySelector('button[type="submit"]'); try { button.disabled = true; await request(`${AUTH_URL}/change-password`, { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); form.reset(); setMessage('تم تغيير كلمة المرور بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } finally { button.disabled = false; } }
+  async function logout() { try { await request(`${AUTH_URL}/logout`, { method: 'POST' }); window.location.replace('index.html'); } catch (error) { setMessage(error.message, 'error'); } }
   document.addEventListener('auth:ready', (event) => { fillUser(event.detail?.user); loadProfile(); });
-  document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener('DOMContentLoaded', () => {
     $('#profile-form')?.addEventListener('submit', updateProfile);
-    document.querySelector('[data-tab="profile"]')?.addEventListener('click', loadProfile);
-    if (!isStandalonePage) return;
-    try {
-      const userData = await request(`${AUTH_URL}/me`);
-      document.body.classList.remove('auth-locked');
-      fillUser(userData.user);
-      await loadProfile();
-    } catch (_) {
-      window.location.replace(`index.html?auth=required&return=profile.html`);
-    }
+    $('#password-form')?.addEventListener('submit', changePassword);
+    $('#profile-logout')?.addEventListener('click', logout);
+    $('#profile-avatar-input')?.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => { const avatar = $('#profile-avatar'); if (avatar) { avatar.textContent = ''; avatar.style.backgroundImage = `url(${reader.result})`; avatar.style.backgroundSize = 'cover'; avatar.style.backgroundPosition = 'center'; } };
+      reader.readAsDataURL(file);
+    });
+    if (document.body.classList.contains('profile-page')) loadProfile();
   });
 })();

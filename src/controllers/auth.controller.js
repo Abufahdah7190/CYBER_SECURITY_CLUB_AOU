@@ -54,6 +54,7 @@ function publicUser(user) {
     major: user.major,
     role: user.role,
     gender: user.gender,
+    createdAt: user.created_at,
   };
 }
 
@@ -218,6 +219,7 @@ async function me(req, res, next) {
         major: user.major,
         gender: user.gender,
         role: user.role,
+        createdAt: user.created_at,
       },
     });
   } catch (err) {

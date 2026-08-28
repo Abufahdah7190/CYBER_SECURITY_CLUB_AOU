@@ -2214,3 +2214,44 @@ body.auth-locked #tab-auth {
 .lms-bottom-nav button:disabled { cursor: not-allowed; opacity: .45; }
 @media (max-width: 900px) { .lms-header { grid-template-columns: auto 1fr auto; } .lms-progress-box { grid-column: 1 / -1; grid-row: 2; } .lms-shell { grid-template-columns: 1fr; } .lms-sidebar { border-inline-end: 0; border-bottom: 1px solid rgba(0,229,255,.13); } .lms-modules { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); } }
 @media (max-width: 560px) { .lms-header { grid-template-columns: 1fr auto; } .lms-back { font-size: 12px; } .course-language { grid-column: 1 / -1; } .lms-main { padding: 18px 12px 30px; } .lms-bottom-nav { flex-direction: column-reverse; } .lms-bottom-nav button { width: 100%; } }
+
+/* Student dashboard */
+.profile-dashboard { max-width: 1180px; margin-top: 28px; }
+.profile-dashboard-head { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding-bottom: 22px; border-bottom: 1px solid var(--glass-border); }
+.profile-dashboard-head h1 { margin: 7px 0 4px; color: var(--text); }
+.profile-dashboard-head p { margin: 0; color: var(--muted); }
+.btn.danger { color: #ffd9e0; border-color: rgba(255,45,85,.35); background: rgba(255,45,85,.09); }
+.btn.danger:hover { color: #fff; border-color: var(--bad); background: rgba(255,45,85,.18); }
+.student-overview { display: flex; justify-content: space-between; gap: 28px; align-items: center; margin: 22px 0; padding: 24px; }
+.student-identity { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.profile-avatar.large { width: 82px; height: 82px; flex-basis: 82px; border-radius: 24px; font-size: 36px; }
+.student-identity h2 { margin: 0 0 6px; color: var(--text); }
+.student-identity p { margin: 4px 0; color: var(--muted); font-size: 13px; }
+.avatar-upload { position: relative; margin-top: 8px; cursor: pointer; }
+.student-stats { display: grid; grid-template-columns: repeat(3, minmax(100px, 1fr)); gap: 10px; min-width: 390px; }
+.student-stats > div { padding: 15px 12px; border: 1px solid rgba(0,229,255,.14); border-radius: 12px; text-align: center; background: rgba(255,255,255,.025); }
+.student-stats strong, .student-stats span { display: block; }
+.student-stats strong { color: var(--accent); font-size: 1.6rem; }
+.student-stats span { margin-top: 5px; color: var(--muted2); font-size: 11px; line-height: 1.5; }
+.dashboard-certificates { margin-top: 18px; padding: 22px; }
+.profile-courses-cta { display: inline-flex; margin-top: 18px; }
+@media (max-width: 850px) { .student-overview { align-items: stretch; flex-direction: column; } .student-stats { min-width: 0; } }
+@media (max-width: 620px) { .profile-dashboard-head { grid-template-columns: 1fr 1fr; } .profile-dashboard-head > div { grid-column: 1 / -1; grid-row: 1; } .profile-dashboard-head .btn:first-child { grid-column: 1; } .profile-dashboard-head .danger { grid-column: 2; } .student-stats { grid-template-columns: 1fr; } .student-identity { align-items: flex-start; flex-direction: column; } }
+
+/* Email domain auto-suggest */
+.auth-field { position: relative; }
+.email-domain-menu { position: absolute; z-index: 30; inset-inline: 0; top: calc(100% + 6px); display: grid; gap: 4px; padding: 6px; border: 1px solid rgba(0,229,255,.3); border-radius: 12px; background: rgba(7,19,42,.98); box-shadow: 0 14px 34px rgba(0,0,0,.35), 0 0 22px rgba(0,229,255,.08); }
+.email-domain-menu[hidden] { display: none; }
+.email-domain-option { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; color: var(--text); background: transparent; text-align: start; cursor: pointer; font: inherit; }
+.email-domain-option:hover, .email-domain-option:focus, .email-domain-option.is-active { outline: none; color: #001219; background: var(--accent); }
+.email-domain-option small { color: var(--muted2); font-size: 10px; }
+.email-domain-option:hover small, .email-domain-option:focus small, .email-domain-option.is-active small { color: #003b4b; }
+
+/* Register form validation states */
+.auth-field.field-invalid > input,
+.auth-field.field-invalid > textarea,
+.auth-field.field-invalid .auth-select-shell { border-color: var(--bad) !important; box-shadow: 0 0 0 3px rgba(255,45,85,.12); }
+.auth-field.field-invalid > label { color: #ff9caf; }
+.auth-field.field-invalid .auth-select-shell:focus-within { border-color: var(--bad); box-shadow: 0 0 0 3px rgba(255,45,85,.16); }
+.auth-field input:invalid:not(:placeholder-shown), .auth-field select:invalid { border-color: rgba(255,45,85,.75); }
+.auth-field input:focus:invalid, .auth-field select:focus:invalid { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,229,255,.1); }
