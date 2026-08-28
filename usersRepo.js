@@ -7,12 +7,12 @@ const { pool } = require('./pool');
 // (req #18). node-postgres sends parameters separately from the query
 // text, so user input is never interpreted as SQL syntax.
 
-const PUBLIC_COLUMNS = `id, first_name, last_name, email, phone, major, role,
+const PUBLIC_COLUMNS = `id, first_name, last_name, email, phone, major, gender, role,
   is_active, email_verified_at, created_at`;
 
 async function findByEmail(email) {
   const { rows } = await pool.query(
-    `SELECT id, first_name, last_name, email, phone, password_hash, major, role,
+    `SELECT id, first_name, last_name, email, phone, password_hash, major, gender, role,
             is_active, failed_login_count, locked_until, created_at
      FROM users WHERE email = $1`,
     [email]
@@ -25,22 +25,22 @@ async function findById(id) {
   return rows[0] || null;
 }
 
-async function createUser({ firstName, lastName, email, phone, passwordHash, major, role = 'student' }) {
+async function createUser({ firstName, lastName, email, phone, passwordHash, major, gender, role = 'student' }) {
   const { rows } = await pool.query(
-    `INSERT INTO users (first_name, last_name, email, phone, password_hash, major, role)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO users (first_name, last_name, email, phone, password_hash, major, gender, role)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING ${PUBLIC_COLUMNS}`,
-    [firstName, lastName, email, phone || null, passwordHash, major || null, role]
+    [firstName, lastName, email, phone || null, passwordHash, major || null, gender || null, role]
   );
   return rows[0];
 }
 
-async function updateProfile(id, { firstName, lastName, phone, major }) {
+async function updateProfile(id, { firstName, lastName, phone, major, gender }) {
   const { rows } = await pool.query(
-    `UPDATE users SET first_name = $2, last_name = $3, phone = $4, major = $5
+    `UPDATE users SET first_name = $2, last_name = $3, phone = $4, major = $5, gender = $6
      WHERE id = $1
      RETURNING ${PUBLIC_COLUMNS}`,
-    [id, firstName, lastName, phone || null, major || null]
+    [id, firstName, lastName, phone || null, major || null, gender || null]
   );
   return rows[0] || null;
 }

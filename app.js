@@ -60,6 +60,11 @@ app.use('/api/learning', learningRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true, env: env.NODE_ENV }));
 
+// Dedicated LMS classroom route. The client reads :courseId from the path.
+app.get('/learn/:courseId', (req, res) => {
+  res.sendFile(path.join(FRONTEND_ROOT, 'course.html'));
+});
+
 // Serve the existing static frontend completely untouched — same files,
 // same paths (index.html, css/style.css, js/*, locales/*).
 app.use(express.static(FRONTEND_ROOT, { index: 'index.html' }));

@@ -77,11 +77,14 @@
         }
       });
     });
-    document.querySelectorAll('.course-action').forEach((button) => {
-      button.addEventListener('click', (event) => {
+    document.querySelectorAll('.course-action').forEach((action) => {
+      // Course actions are real anchors with target="_blank". Do not call
+      // preventDefault here, otherwise the browser cannot open the new tab.
+      if (action.tagName === 'A') return;
+      action.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        openCourse(button.closest('[data-course-id]'));
+        openCourse(action.closest('[data-course-id]'));
       });
     });
   }
