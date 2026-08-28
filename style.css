@@ -2279,3 +2279,15 @@ body.auth-locked #tab-auth {
 .provider-badge { display: grid; place-items: center; min-width: 58px; min-height: 58px; padding: 8px; border-radius: 14px; color: #001219; background: linear-gradient(135deg, var(--accent), var(--good)); font-weight: 900; font-size: 12px; text-align: center; }
 .provider-course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
 @media (max-width: 560px) { .provider-heading { align-items: flex-start; } .provider-badge { min-width: 48px; min-height: 48px; } }
+
+/* Arabic course path typography fixes */
+.learning-paths, .learning-path-card, .learning-path-card > div, .provider-course-group, .provider-heading, .provider-heading > div { direction: rtl; text-align: right; }
+.learning-path-card { gap: 16px; padding: 16px 18px; line-height: 1.8; }
+.learning-path-card strong, .learning-path-card small { display: block; line-height: 1.8; letter-spacing: .01em; margin: 0; }
+.learning-path-card small { margin-top: 4px; }
+.path-step { flex: 0 0 46px; line-height: 46px; text-align: center; }
+.provider-heading { gap: 16px; padding: 16px 18px; line-height: 1.8; }
+.provider-heading h3, .provider-heading p { display: block; margin: 0; line-height: 1.8; letter-spacing: .01em; }
+.provider-heading p { margin-top: 4px; }
+.provider-badge { flex: 0 0 58px; line-height: 1.3; }
+@media (max-width: 560px) { .learning-path-card, .provider-heading { gap: 12px; padding: 13px 14px; } .path-step { flex-basis: 40px; line-height: 40px; } .provider-badge { flex-basis: 48px; } }

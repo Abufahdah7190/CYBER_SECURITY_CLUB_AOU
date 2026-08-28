@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -14,7 +15,12 @@ const userRoutes = require('./routes/user.routes');
 const { generalLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
 
-const FRONTEND_ROOT = path.join(__dirname, '..', '..'); // project root: index.html, css/, js/, locales/
+const PROJECT_ROOT = path.join(__dirname, '..', '..');
+const SERVER_ROOT = path.join(__dirname, '..');
+// Support both Render layouts: repository root or Root Directory=server.
+const FRONTEND_ROOT = fs.existsSync(path.join(SERVER_ROOT, 'public', 'index.html'))
+  ? path.join(SERVER_ROOT, 'public')
+  : PROJECT_ROOT;
 
 const app = express();
 
