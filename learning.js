@@ -57,7 +57,7 @@
     if (!slug) return;
     const target = new URL('course.html', document.baseURI);
     target.searchParams.set('course', slug);
-    window.location.assign(target.href);
+    window.open(target.href, '_blank', 'noopener,noreferrer');
   }
 
   function bindCourseNavigation() {

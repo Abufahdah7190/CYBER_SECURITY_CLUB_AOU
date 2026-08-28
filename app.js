@@ -66,6 +66,10 @@ app.get('/api/health', (req, res) => res.json({ ok: true, env: env.NODE_ENV }));
 const sendLmsPage = (req, res) => res.sendFile(path.join(FRONTEND_ROOT, 'course.html'));
 app.get('/learn/:courseId', sendLmsPage);
 
+// Student dashboard route. Keep it separate from the public home page.
+const sendStudentProfile = (req, res) => res.sendFile(path.join(FRONTEND_ROOT, 'profile.html'));
+app.get('/student/profile', sendStudentProfile);
+
 // Serve the existing static frontend completely untouched — same files,
 // same paths (index.html, css/style.css, js/*, locales/*).
 app.use(express.static(FRONTEND_ROOT, { index: 'index.html' }));

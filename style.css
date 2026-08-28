@@ -2270,3 +2270,12 @@ body.auth-locked #tab-auth {
 .topbar-account-panel a:hover, .topbar-account-panel a:focus, .topbar-account-panel button:hover, .topbar-account-panel button:focus { outline: none; color: #001219; background: var(--accent); }
 .topbar-account-panel button { color: #ffb5c2; }
 @media (max-width: 520px) { .topbar-account-trigger { max-width: 150px; } #header-profile-name { max-width: 85px; } .topbar-account-panel { inset-inline-end: -8px; } }
+
+/* Provider-grouped course catalog */
+.provider-course-group { margin-top: 28px; }
+.provider-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; padding: 14px 16px; border: 1px solid rgba(0,229,255,.18); border-radius: 16px; background: linear-gradient(120deg, rgba(0,229,255,.08), rgba(20,30,65,.5)); }
+.provider-heading h3 { margin: 0; color: var(--text); }
+.provider-heading p { margin: 4px 0 0; color: var(--muted); }
+.provider-badge { display: grid; place-items: center; min-width: 58px; min-height: 58px; padding: 8px; border-radius: 14px; color: #001219; background: linear-gradient(135deg, var(--accent), var(--good)); font-weight: 900; font-size: 12px; text-align: center; }
+.provider-course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+@media (max-width: 560px) { .provider-heading { align-items: flex-start; } .provider-badge { min-width: 48px; min-height: 48px; } }
