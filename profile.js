@@ -86,6 +86,20 @@
     }
   }
 
+  const isStandalonePage = document.body?.classList.contains('profile-page');
+
   document.addEventListener('auth:ready', (event) => { fillUser(event.detail?.user); loadProfile(); });
-  document.addEventListener('DOMContentLoaded', () => { $('#profile-form')?.addEventListener('submit', updateProfile); document.querySelector('[data-tab="profile"]')?.addEventListener('click', loadProfile); });
+  document.addEventListener('DOMContentLoaded', async () => {
+    $('#profile-form')?.addEventListener('submit', updateProfile);
+    document.querySelector('[data-tab="profile"]')?.addEventListener('click', loadProfile);
+    if (!isStandalonePage) return;
+    try {
+      const userData = await request(`${AUTH_URL}/me`);
+      document.body.classList.remove('auth-locked');
+      fillUser(userData.user);
+      await loadProfile();
+    } catch (_) {
+      window.location.replace(`index.html?auth=required&return=profile.html`);
+    }
+  });
 })();

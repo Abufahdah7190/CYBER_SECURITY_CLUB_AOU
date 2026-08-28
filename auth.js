@@ -65,6 +65,8 @@
     if (authTab) authTab.hidden = true;
     const profileTab = document.querySelector('[data-tab="profile"]');
     if (profileTab) profileTab.hidden = false;
+    const profileLink = document.querySelector('[data-profile-link]');
+    if (profileLink) profileLink.hidden = false;
   }
 
   function lockSite() {
@@ -83,6 +85,8 @@
     if (authPanel) { authPanel.style.display = 'none'; authPanel.hidden = true; authPanel.setAttribute('aria-hidden', 'true'); }
     if (authTab) { authTab.hidden = true; authTab.setAttribute('aria-hidden', 'true'); }
     if (profileTab) { profileTab.hidden = false; profileTab.removeAttribute('aria-hidden'); }
+    const profileLink = document.querySelector('[data-profile-link]');
+    if (profileLink) { profileLink.hidden = false; profileLink.removeAttribute('aria-hidden'); }
     const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
     $('#auth-user-name').textContent = name || user.email || 'المستخدم';
     $('#auth-user').hidden = false;
@@ -100,6 +104,8 @@
     if (authPanel) { authPanel.hidden = false; authPanel.removeAttribute('aria-hidden'); }
     if (authTab) { authTab.hidden = false; authTab.removeAttribute('aria-hidden'); }
     if (profileTab) { profileTab.hidden = true; profileTab.setAttribute('aria-hidden', 'true'); }
+    const profileLink = document.querySelector('[data-profile-link]');
+    if (profileLink) { profileLink.hidden = true; profileLink.setAttribute('aria-hidden', 'true'); }
     $('#auth-user').hidden = true;
     document.querySelector('.auth-switcher').hidden = false;
     switchView('login');

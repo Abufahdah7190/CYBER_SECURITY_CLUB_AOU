@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ملف الطالب | CyberClub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="profile-page auth-locked">
+  <main class="app profile-page-shell">
+    <header class="profile-page-header">
+      <a class="btn ghost" href="index.html">← العودة إلى المنصة</a>
+      <div>
+        <span class="auth-kicker">CYBERCLUB ACCOUNT</span>
+        <h1>ملف الطالب</h1>
+        <p>بياناتك المسجلة وشهاداتك المحفوظة في حسابك.</p>
+      </div>
+    </header>
+    <div id="profile-message" class="profile-message" role="status" aria-live="polite"></div>
+    <div class="profile-layout">
+      <form id="profile-form" class="card profile-form" novalidate>
+        <div class="profile-card-heading"><div class="profile-avatar" id="profile-avatar">ط</div><div><h3>المعلومات الشخصية</h3><p>يمكنك تحديث بياناتك الأساسية، ولا يمكن تعديل البريد من هنا.</p></div></div>
+        <div class="auth-grid">
+          <div class="auth-field"><label for="profile-first-name">الاسم الأول</label><input id="profile-first-name" name="firstName" type="text" required minlength="2" maxlength="100"></div>
+          <div class="auth-field"><label for="profile-last-name">اسم العائلة</label><input id="profile-last-name" name="lastName" type="text" required minlength="2" maxlength="100"></div>
+        </div>
+        <div class="auth-field"><label for="profile-email">البريد الإلكتروني</label><input id="profile-email" name="email" type="email" readonly></div>
+        <div class="auth-grid">
+          <div class="auth-field"><label for="profile-phone">رقم الهاتف</label><input id="profile-phone" name="phone" type="tel" required></div>
+          <div class="auth-field"><label for="profile-major">التخصص</label><select id="profile-major" name="major" required><option value="">اختر التخصص</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select></div>
+        </div>
+        <div class="auth-field"><label for="profile-gender">الجنس</label><select id="profile-gender" name="gender" required><option value="">اختر الجنس</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+        <button class="btn primary" type="submit">حفظ التعديلات</button>
+      </form>
+      <section class="card profile-certificates"><div class="profile-card-heading"><div class="profile-icon">★</div><div><h3>شهاداتي</h3><p id="profile-certificates-summary">جارٍ تحميل الشهادات...</p></div></div><div id="profile-certificates-list" class="profile-certificates-list"></div></section>
+    </div>
+  </main>
+  <script src="js/profile.js"></script>
+</body>
+</html>

@@ -28,6 +28,7 @@
 <div class="topbar">
 <div class="topbar-inner">
 <div class="actions">
+<a class="topbar-profile-link" data-profile-link href="profile.html" hidden>ملف الطالب</a>
 <!-- Language Switcher -->
 <div class="lang-switcher" data-active="ar" role="group" aria-label="Language selector">
 <span aria-hidden="true" class="lang-switcher-thumb"></span>
@@ -69,7 +70,6 @@
 <button aria-controls="tab-security-info" class="tab" data-i18n="tab.securityInfo" data-tab="security-info">معلومات الأمان</button>
 <button aria-controls="tab-learning-resources" class="tab" data-i18n="tab.learningResources" data-tab="learning-resources">مصادر التعلم السيبرانية</button>
 <button aria-controls="tab-learning" class="tab" data-tab="learning">الدورات</button>
-<button aria-controls="tab-profile" class="tab profile-tab" data-tab="profile">ملف الطالب</button>
 <button aria-controls="tab-auth" class="tab auth-tab" data-tab="auth">تسجيل الدخول / التسجيل</button>
 </div>
 <div class="panel-wrap">
@@ -82,14 +82,14 @@
     </div>
     <div class="auth-message" id="auth-message" role="status" aria-live="polite"></div>
     <form class="auth-form" id="login-form" novalidate>
-      <div class="auth-field"><label for="login-email">البريد الإلكتروني الجامعي</label><input id="login-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <div class="auth-field"><label for="login-email">البريد الإلكتروني</label><input id="login-email" name="email" type="email" autocomplete="email" required placeholder="name@gmail.com أو name@yahoo.com"></div>
       <div class="auth-field"><label for="login-password">كلمة المرور</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
       <button class="btn primary auth-submit" type="submit">دخول آمن</button>
       <button class="auth-link" type="button" data-auth-forgot-open>نسيت كلمة المرور؟</button>
     </form>
     <form class="auth-form" id="forgot-form" hidden novalidate>
       <div class="auth-form-intro"><h3>استعادة كلمة المرور</h3><p>أدخل بريدك الإلكتروني الجامعي وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.</p></div>
-      <div class="auth-field"><label for="forgot-email">البريد الإلكتروني الجامعي</label><input id="forgot-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <div class="auth-field"><label for="forgot-email">البريد الإلكتروني</label><input id="forgot-email" name="email" type="email" autocomplete="email" required placeholder="name@gmail.com أو name@yahoo.com"></div>
       <button class="btn primary auth-submit" type="submit">إرسال رابط الاستعادة</button>
       <button class="auth-link" type="button" data-auth-forgot-back>العودة إلى تسجيل الدخول</button>
     </form>
@@ -98,7 +98,7 @@
         <div class="auth-field"><label for="register-first-name">الاسم الأول</label><input id="register-first-name" name="firstName" type="text" autocomplete="given-name" required minlength="2"></div>
         <div class="auth-field"><label for="register-last-name">اسم العائلة</label><input id="register-last-name" name="lastName" type="text" autocomplete="family-name" required minlength="2"></div>
       </div>
-      <div class="auth-field"><label for="register-email">البريد الإلكتروني الجامعي</label><input id="register-email" name="email" type="email" autocomplete="email" required placeholder="name@aou.edu.sa"></div>
+      <div class="auth-field"><label for="register-email">البريد الإلكتروني</label><input id="register-email" name="email" type="email" autocomplete="email" required placeholder="name@gmail.com أو name@yahoo.com"></div>
       <div class="auth-grid">
         <div class="auth-field"><label for="register-phone">رقم الهاتف</label><input id="register-phone" name="phone" type="tel" autocomplete="tel" required placeholder="05xxxxxxxx"></div>
         <div class="auth-field auth-choice-field"><label for="register-major">التخصص</label><div class="auth-select-shell"><span class="auth-choice-icon" aria-hidden="true">⌘</span><select id="register-major" name="major" required><option value="">اختر تخصصك الأكاديمي</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select><span class="auth-select-chevron" aria-hidden="true">⌄</span></div><small class="auth-choice-help">يساعدنا ذلك على تخصيص مسارك التعليمي.</small></div>
@@ -122,7 +122,7 @@
           <div class="auth-field"><label for="profile-first-name">الاسم الأول</label><input id="profile-first-name" name="firstName" type="text" required minlength="2" maxlength="100"></div>
           <div class="auth-field"><label for="profile-last-name">اسم العائلة</label><input id="profile-last-name" name="lastName" type="text" required minlength="2" maxlength="100"></div>
         </div>
-        <div class="auth-field"><label for="profile-email">البريد الإلكتروني الجامعي</label><input id="profile-email" name="email" type="email" readonly></div>
+        <div class="auth-field"><label for="profile-email">البريد الإلكتروني</label><input id="profile-email" name="email" type="email" readonly></div>
         <div class="auth-grid">
           <div class="auth-field"><label for="profile-phone">رقم الهاتف</label><input id="profile-phone" name="phone" type="tel" required></div>
           <div class="auth-field"><label for="profile-major">التخصص</label><select id="profile-major" name="major" required><option value="">اختر التخصص</option><option>علوم الحاسب</option><option>أمن الشبكات</option><option>تقنية المعلومات والحوسبة</option><option>الحوسبة والأعمال</option><option>تطوير الويب</option></select></div>
