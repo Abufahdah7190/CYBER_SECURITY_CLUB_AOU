@@ -48,7 +48,7 @@ router.get('/progress', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/progress/:courseSlug', [courseParam, body('percent').isInt({ min: 0, max: 100 }), body('lastSection').optional().isInt({ min: 0, max: 20 }), body('quizScores').optional().isObject(), body('language').optional().isIn(['ar', 'en'])], handleValidation, async (req, res, next) => {
+router.put('/progress/:courseSlug', [courseParam, body('percent').isInt({ min: 0, max: 100 }), body('lastSection').optional().isInt({ min: 0, max: 30 }), body('quizScores').optional().isObject(), body('language').optional().isIn(['ar', 'en']), body('courseName').optional().trim().isLength({ min: 2, max: 200 })], handleValidation, async (req, res, next) => {
   try {
     const { courseSlug } = req.params;
     const percent = Number(req.body.percent);
@@ -67,7 +67,22 @@ router.put('/progress/:courseSlug', [courseParam, body('percent').isInt({ min: 0
        RETURNING course_slug AS "courseSlug", percent, last_section AS "lastSection", last_accessed_at AS "lastAccessedAt", quiz_scores AS "quizScores", certificate_language AS language, completed_at AS "completedAt"`,
       [req.user.id, courseSlug, percent, lastSection, quizScores, language, completedAt]
     );
-    res.json({ progress: rows[0] });
+    let certificate = null;
+    if (percent >= 100) {
+      const user = await pool.query('SELECT first_name, last_name FROM users WHERE id=$1', [req.user.id]);
+      const studentName = `${user.rows[0]?.first_name || ''} ${user.rows[0]?.last_name || ''}`.trim();
+      const courseName = String(req.body.courseName || courseSlug).trim();
+      const certificateCode = `CSC-AOU-${new Date().getFullYear()}-${String(crypto.randomInt(1000, 10000))}`;
+      const issued = await pool.query(
+        `INSERT INTO student_course_certificates (student_id, course_slug, course_name, student_name, language, certificate_code)
+         VALUES ($1,$2,$3,$4,$5,$6)
+         ON CONFLICT (student_id, course_slug) DO UPDATE SET course_name=EXCLUDED.course_name, student_name=EXCLUDED.student_name, language=EXCLUDED.language
+         RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt"`,
+        [req.user.id, courseSlug, courseName, studentName, language, certificateCode]
+      );
+      certificate = issued.rows[0];
+    }
+    res.json({ progress: rows[0], certificate });
   } catch (error) { next(error); }
 });
 
@@ -75,7 +90,7 @@ router.post('/certificates/:courseSlug', [courseParam, body('courseName').trim()
   try {
     const check = await pool.query('SELECT percent FROM student_course_progress WHERE student_id=$1 AND course_slug=$2', [req.user.id, req.params.courseSlug]);
     const completionPercent = Number(check.rows[0]?.percent || 0);
-    if (completionPercent < 80) return res.status(400).json({ error: 'يجب إكمال 80% على الأقل من الدورة للحصول على الشهادة' });
+    if (completionPercent < 100) return res.status(400).json({ error: 'يجب إكمال جميع دروس الدورة بنسبة 100% للحصول على الشهادة' });
     const user = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [req.user.id]);
     const studentName = `${user.rows[0].first_name} ${user.rows[0].last_name}`;
     const code = `CSC-AOU-${new Date().getFullYear()}-${String(crypto.randomInt(1000, 10000))}`;
