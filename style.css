@@ -2255,3 +2255,18 @@ body.auth-locked #tab-auth {
 .auth-field.field-invalid .auth-select-shell:focus-within { border-color: var(--bad); box-shadow: 0 0 0 3px rgba(255,45,85,.16); }
 .auth-field input:invalid:not(:placeholder-shown), .auth-field select:invalid { border-color: rgba(255,45,85,.75); }
 .auth-field input:focus:invalid, .auth-field select:focus:invalid { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(0,229,255,.1); }
+
+/* Header student account menu */
+.topbar-account { position: relative; }
+.topbar-account[hidden] { display: none; }
+.topbar-account-trigger { display: inline-flex; align-items: center; gap: 8px; max-width: 210px; padding: 7px 10px; border: 1px solid rgba(0,229,255,.28); border-radius: 12px; color: var(--text); background: rgba(0,229,255,.07); cursor: pointer; font: inherit; font-weight: 700; }
+.topbar-account-trigger:hover, .topbar-account-trigger:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,.1); outline: none; }
+.topbar-avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: #001219; background: linear-gradient(135deg, var(--accent), var(--good)); font-weight: 900; }
+#header-profile-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-chevron { color: var(--accent); font-size: 17px; line-height: 1; }
+.topbar-account-panel { position: absolute; z-index: 40; inset-inline-end: 0; top: calc(100% + 9px); display: grid; min-width: 205px; padding: 7px; border: 1px solid rgba(0,229,255,.25); border-radius: 13px; background: rgba(7,19,42,.98); box-shadow: 0 16px 35px rgba(0,0,0,.35); }
+.topbar-account-panel[hidden] { display: none; }
+.topbar-account-panel a, .topbar-account-panel button { padding: 11px 12px; border: 0; border-radius: 8px; color: var(--text); background: transparent; text-align: start; text-decoration: none; cursor: pointer; font: inherit; }
+.topbar-account-panel a:hover, .topbar-account-panel a:focus, .topbar-account-panel button:hover, .topbar-account-panel button:focus { outline: none; color: #001219; background: var(--accent); }
+.topbar-account-panel button { color: #ffb5c2; }
+@media (max-width: 520px) { .topbar-account-trigger { max-width: 150px; } #header-profile-name { max-width: 85px; } .topbar-account-panel { inset-inline-end: -8px; } }
