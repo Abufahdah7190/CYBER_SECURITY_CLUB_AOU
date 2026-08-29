@@ -2,6 +2,8 @@
 const express = require('express');
 const { pool } = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
+const QRCode = require('qrcode');
+const env = require('../config/env');
 const router = express.Router();
 
 router.get('/profile', requireAuth, async (req, res, next) => {
@@ -13,7 +15,11 @@ router.get('/profile', requireAuth, async (req, res, next) => {
     ]);
     if (!userResult.rows[0]) return res.status(404).json({ error: 'المستخدم غير موجود' });
     const progress = progressResult.rows;
-    const certificates = certificateResult.rows;
+    const certificates = await Promise.all(certificateResult.rows.map(async (certificate) => {
+      const verificationUrl = `${env.FRONTEND_URL}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}`;
+      const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'M', margin: 1, width: 220 });
+      return { ...certificate, verificationUrl, qrDataUrl };
+    }));
     return res.json({
       user: userResult.rows[0],
       progress,

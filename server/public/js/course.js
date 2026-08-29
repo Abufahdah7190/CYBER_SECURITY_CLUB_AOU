@@ -99,6 +99,13 @@
     root.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { current = Number(button.dataset.index); render(); }));
   }
 
+  function quizQuestions(lesson) {
+    const quiz = lesson.quiz?.[lang] || lesson.quiz?.ar || {};
+    if (Array.isArray(quiz.questions) && quiz.questions.length) return quiz.questions;
+    if (quiz.question) return [quiz];
+    if (Array.isArray(lesson.questions) && lesson.questions.length) return lesson.questions;
+    return [];
+  }
   function renderLesson() {
     const item = flat()[current];
     const content = $('lesson-content');
@@ -110,10 +117,12 @@
     }
     const lesson = item.lesson;
     const done = Boolean(saved.quizScores?.[current]);
-    const quiz = lesson.quiz?.[lang] || lesson.quiz?.ar;
+    const questions = quizQuestions(lesson);
     const steps = lesson.steps?.[lang] || lesson.steps?.ar || [];
+    const media = `<div class="lms-article-placeholder"><strong>${lang === 'ar' ? 'درس مقالي' : 'Article lesson'}</strong><small>${lang === 'ar' ? 'اقرأ المحتوى التالي ثم أجب عن أسئلة الاختبار.' : 'Read the lesson content below, then answer the five-question quiz.'}</small></div>`;
     $('lesson-breadcrumb').textContent = `${text(item.module.title)} / ${text(lesson.title)}`;
-    content.innerHTML = `<div class="lms-lesson-kicker">${text(lesson.typeLabel)} · ${lang === 'ar' ? `الدرس ${current + 1} من ${flat().length}` : `Lesson ${current + 1} of ${flat().length}`}</div><h2>${text(lesson.title)}</h2><div class="lms-video-placeholder"><span>▶</span><strong>${lang === 'ar' ? 'المادة التعليمية' : 'Learning material'}</strong><small>${lang === 'ar' ? 'يمكن إضافة فيديو أو مرفق لهذا الدرس لاحقًا' : 'A video or attachment can be added to this lesson later.'}</small></div><p class="lms-lesson-body">${text(lesson.body)}</p><div class="lms-lesson-steps"><h3>${lang === 'ar' ? 'ماذا ستطبق؟' : 'What you will practice'}</h3><ol>${steps.map((step) => `<li>${step}</li>`).join('')}</ol></div><div class="lms-quiz"><h3>${lang === 'ar' ? 'اختبار قصير' : 'Quick quiz'}</h3><p>${quiz.question}</p>${quiz.options.map((option, index) => `<label><input type="radio" name="lms-quiz" value="${index}" ${done ? 'disabled' : ''}> ${option}</label>`).join('')}<span id="quiz-result">${done ? (lang === 'ar' ? 'تم اجتياز هذا الدرس.' : 'Lesson completed.') : ''}</span></div>`;
+    const quizHtml = questions.length ? questions.map((question, questionIndex) => `<fieldset class="lms-quiz-question"><legend>${questionIndex + 1}. ${question.question}</legend>${(question.options || []).map((option, optionIndex) => `<label><input type="radio" name="lms-quiz-${questionIndex}" value="${optionIndex}" ${done ? 'disabled' : ''}> ${option}</label>`).join('')}</fieldset>`).join('') : `<p>${lang === 'ar' ? 'لا توجد أسئلة لهذا الدرس حاليًا.' : 'No questions are currently available for this lesson.'}</p>`;
+    content.innerHTML = `<div class="lms-lesson-kicker">${text(lesson.typeLabel)} · ${lang === 'ar' ? `الدرس ${current + 1} من ${flat().length}` : `Lesson ${current + 1} of ${flat().length}`}</div><h2>${text(lesson.title)}</h2>${media}<p class="lms-lesson-body">${text(lesson.body)}</p><div class="lms-lesson-steps"><h3>${lang === 'ar' ? 'ماذا ستطبق؟' : 'What you will practice'}</h3><ol>${steps.map((step) => `<li>${step}</li>`).join('')}</ol></div><div class="lms-quiz"><h3>${lang === 'ar' ? 'اختبار قصير' : 'Quick quiz'}</h3>${quizHtml}<span id="quiz-result">${done ? (lang === 'ar' ? 'تم اجتياز هذا الدرس.' : 'Lesson completed.') : ''}</span></div>`;
     $('previous-lesson').disabled = current === 0;
     $('complete-lesson').disabled = done;
     $('complete-lesson').textContent = current === flat().length - 1 ? (lang === 'ar' ? 'إكمال الدورة' : 'Complete course') : (lang === 'ar' ? 'إكمال والانتقال للدرس التالي' : 'Complete and go to next');
@@ -133,9 +142,13 @@
   async function completeLesson() {
     const item = flat()[current];
     const result = $('quiz-result');
-    const selected = document.querySelector('input[name="lms-quiz"]:checked');
-    if (!selected) { if (result) result.textContent = lang === 'ar' ? 'اختر إجابة أولًا.' : 'Choose an answer first.'; return; }
-    if (Number(selected.value) !== (item.lesson.quiz?.[lang] || item.lesson.quiz.ar).correct) { result.textContent = lang === 'ar' ? 'الإجابة غير صحيحة. راجع الدرس وحاول مرة أخرى.' : 'Incorrect. Review the lesson and try again.'; return; }
+    const questions = quizQuestions(item.lesson);
+    const answers = questions.map((question, index) => document.querySelector(`input[name="lms-quiz-${index}"]:checked`));
+    if (!questions.length || answers.some((answer) => !answer)) { if (result) result.textContent = lang === 'ar' ? 'أجب عن جميع الأسئلة أولًا.' : 'Answer all questions first.'; return; }
+    const correctAnswers = answers.reduce((total, answer, index) => total + (Number(answer.value) === Number(questions[index].correct) ? 1 : 0), 0);
+    const scorePercent = Math.round((correctAnswers / questions.length) * 100);
+    if (scorePercent < 80) { if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}%. تحتاج إلى 80% على الأقل لإكمال الدرس.` : `Your score is ${scorePercent}%. You need at least 80% to complete this lesson.`; return; }
+    if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}% — تم اجتياز الاختبار.` : `Score: ${scorePercent}% — Quiz passed.`;
     const quizScores = { ...(saved.quizScores || {}), [current]: true };
     const percent = Math.round(Object.values(quizScores).filter(Boolean).length / flat().length * 100);
     try {

@@ -2303,6 +2303,14 @@ body.auth-locked #tab-auth {
 .lms-video-placeholder span { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; color: #001219; background: var(--accent); font-size: 22px; }
 .lms-video-placeholder strong { color: var(--text); }
 .lms-video-placeholder small { color: var(--muted); }
+.lms-video-placeholder video { width: min(100%, 720px); max-height: 380px; border-radius: 12px; background: #000; }
+.lms-article-placeholder { display: grid; gap: 8px; margin: 20px 0; padding: 24px; border: 1px solid rgba(0,229,255,.18); border-radius: 16px; background: rgba(8,20,38,.72); text-align: center; }
+.lms-article-placeholder strong { color: var(--accent); }
+.lms-article-placeholder small { color: var(--muted); }
+.lms-quiz-question { display: grid; gap: 8px; margin: 14px 0; padding: 14px; border: 1px solid rgba(0,229,255,.12); border-radius: 12px; }
+.lms-quiz-question legend { color: var(--text); font-weight: 700; }
+.certificate-qr { display: block; width: 150px; height: 150px; margin: 16px auto; background: #fff; padding: 8px; border-radius: 8px; }
+.certificate-disclaimer { font-size: 12px; color: var(--muted); }
 
 /* Course catalog language and text wrapping fix */
 .learning-heading, .learning-heading h2, .learning-heading p, .provider-heading, .provider-heading h3, .provider-heading p, .course-card, .course-card h3, .course-card p, .course-track, .course-requirement, .course-meta { direction: rtl; text-align: right; }

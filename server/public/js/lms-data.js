@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const lessonTypes = ['video', 'article', 'lab'];
+  const lessonTypes = ['article'];
   const seeds = [
     { slug: 'cyber-basics', ar: 'أساسيات الأمن السيبراني', en: 'Introduction to Cybersecurity', level: 'سهل · مبتدئ', desc: 'مدخل عملي إلى التهديدات والهوية الرقمية وحماية الحسابات.', modules: ['مفاهيم الأمن السيبراني', 'حماية الهوية والأجهزة', 'الوعي والاستجابة اليومية'] },
     { slug: 'digital-literacy', ar: 'الوعي الرقمي الآمن', en: 'Digital Safety Awareness', level: 'سهل · مبتدئ', desc: 'مهارات الخصوصية والمعلومات المضللة والسلوك الرقمي الآمن.', modules: ['الهوية والخصوصية', 'الأجهزة والبيانات', 'التفكير النقدي الرقمي'] },
@@ -24,6 +24,16 @@
   const moduleNamesEn = ['Core Concepts', 'Practical Application', 'Review and Assessment'];
   const levelsEn = { 'سهل · مبتدئ': 'Easy · Beginner', 'متوسط': 'Intermediate', 'صعب · متقدم': 'Hard · Advanced' };
   const typeLabels = { video: 'فيديو تعليمي', article: 'قراءة ومقال', lab: 'مختبر عملي' };
+  function buildQuiz(topic, topicEn) {
+    const arPrompts = [`ما الممارسة الصحيحة أثناء درس «${topic}»؟`, `ما الخطوة الأولى الآمنة في «${topic}»؟`, `ما السلوك الذي يحافظ على جودة العمل في «${topic}»؟`, `ما الإجراء المناسب بعد تحليل «${topic}»؟`, `ما القاعدة الأساسية عند تطبيق «${topic}»؟`];
+    const enPrompts = [`What is the correct practice during “${topicEn}”?`, `What is the first safe step in “${topicEn}”?`, `Which behavior preserves quality when working on “${topicEn}”?`, `What should you do after analyzing “${topicEn}”?`, `What is the core rule when applying “${topicEn}”?`];
+    const arOptions = ['التوثيق والعمل ضمن نطاق مصرح', 'تجربة أي إجراء على نظام عام', 'مشاركة بيانات حساسة'];
+    const enOptions = ['Document work within an authorized scope', 'Try any action on a public system', 'Share sensitive data'];
+    return {
+      ar: { questions: arPrompts.map((question) => ({ question, options: arOptions, correct: 0 })) },
+      en: { questions: enPrompts.map((question) => ({ question, options: enOptions, correct: 0 })) },
+    };
+  }
   function buildLesson(course, moduleName, moduleIndex, lessonIndex) {
     const topic = topics[moduleIndex][lessonIndex];
     const topicEn = topicsEn[moduleIndex][lessonIndex];
@@ -34,10 +44,10 @@
       id: `${course.slug}-m${moduleIndex + 1}-l${lessonIndex + 1}`,
       title: { ar: title, en: `${course.en} — ${moduleNameEn}: ${topicEn}` },
       type,
-      typeLabel: { ar: typeLabels[type], en: type === 'video' ? 'Instructional video' : type === 'article' ? 'Reading article' : 'Hands-on lab' },
+      typeLabel: { ar: 'درس مقالي', en: 'Article lesson' },
       body: { ar: `في هذا الدرس من دورة «${course.ar}» ستتعلم ${topic.toLowerCase()} ضمن سياق ${moduleName}. ركّز على فهم السبب والنتيجة، ثم طبّق الخطوات في بيئة تدريبية مصرح بها. سجّل ملاحظاتك وراجعها قبل الانتقال إلى الاختبار.`, en: `In this lesson of ${course.en}, you will study ${topicEn} within ${moduleNameEn}. Focus on cause and effect, then apply the steps in an authorized training environment. Take notes before the unit quiz.` },
       steps: { ar: ['حدد الهدف والأصول المتأثرة.', 'حلل المخاطر والبيانات المتاحة.', 'وثّق النتيجة والخطوة التالية.'], en: ['Define the objective and affected assets.', 'Analyze the available risks and evidence.', 'Document the outcome and next action.'] },
-      quiz: { ar: { question: `ما الممارسة الصحيحة أثناء درس «${topic}»؟`, options: ['التوثيق والعمل ضمن نطاق مصرح', 'تجربة أي إجراء على نظام عام', 'مشاركة بيانات حساسة'], correct: 0 }, en: { question: `What is the correct practice during “${topicEn}”?`, options: ['Document work within an authorized scope', 'Try any action on a public system', 'Share sensitive data'], correct: 0 } },
+      quiz: buildQuiz(topic, topicEn),
     };
   }
   window.CYBERCLUB_LMS = seeds.map((course) => ({ ...course, level: { ar: course.level, en: levelsEn[course.level] || course.level }, desc: { ar: course.desc, en: `A structured learning path for ${course.en}, with guided lessons, practice, and assessment.` }, image: `assets/courses/${course.slug === 'cyber-basics' || course.slug === 'digital-literacy' ? 'cyber-basics' : course.slug === 'ethical-hacking' || course.slug === 'cloud-security' || course.slug === 'soc-analyst' ? 'ethical-hacking' : 'network-defense'}.svg`, modules: course.modules.map((name, moduleIndex) => ({ id: `${course.slug}-m${moduleIndex + 1}`, title: { ar: `الوحدة ${moduleIndex + 1}: ${name}`, en: `Module ${moduleIndex + 1}: ${moduleNamesEn[moduleIndex]}` }, lessons: topics[moduleIndex].map((_, lessonIndex) => buildLesson(course, name, moduleIndex, lessonIndex)) })) })) ;

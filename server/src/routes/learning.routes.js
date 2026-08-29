@@ -17,7 +17,7 @@ router.get('/verify/:certificateCode', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
       `SELECT certificate_code AS "certificateCode", course_name AS "courseName", student_name AS "studentName",
-              language, issued_at AS "issuedAt"
+              language, issued_at AS "issuedAt", 'valid' AS status
        FROM student_course_certificates
        WHERE certificate_code = $1`,
       [req.params.certificateCode]
@@ -72,12 +72,12 @@ router.put('/progress/:courseSlug', [courseParam, body('percent').isInt({ min: 0
       const user = await pool.query('SELECT first_name, last_name FROM users WHERE id=$1', [req.user.id]);
       const studentName = `${user.rows[0]?.first_name || ''} ${user.rows[0]?.last_name || ''}`.trim();
       const courseName = String(req.body.courseName || courseSlug).trim();
-      const certificateCode = `CSC-AOU-${new Date().getFullYear()}-${String(crypto.randomInt(1000, 10000))}`;
+      const certificateCode = `CERT-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
       const issued = await pool.query(
         `INSERT INTO student_course_certificates (student_id, course_slug, course_name, student_name, language, certificate_code)
          VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (student_id, course_slug) DO UPDATE SET course_name=EXCLUDED.course_name, student_name=EXCLUDED.student_name, language=EXCLUDED.language
-         RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt"`,
+         RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt", 'valid' AS status`,
         [req.user.id, courseSlug, courseName, studentName, language, certificateCode]
       );
       certificate = issued.rows[0];
@@ -93,12 +93,12 @@ router.post('/certificates/:courseSlug', [courseParam, body('courseName').trim()
     if (completionPercent < 100) return res.status(400).json({ error: 'يجب إكمال جميع دروس الدورة بنسبة 100% للحصول على الشهادة' });
     const user = await pool.query('SELECT email, first_name, last_name FROM users WHERE id=$1', [req.user.id]);
     const studentName = `${user.rows[0].first_name} ${user.rows[0].last_name}`;
-    const code = `CSC-AOU-${new Date().getFullYear()}-${String(crypto.randomInt(1000, 10000))}`;
+    const code = `CERT-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const { rows } = await pool.query(
       `INSERT INTO student_course_certificates (student_id, course_slug, course_name, student_name, language, certificate_code)
        VALUES ($1,$2,$3,$4,$5,$6)
        ON CONFLICT (student_id, course_slug) DO UPDATE SET language=EXCLUDED.language
-       RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt"`,
+       RETURNING course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt", 'valid' AS status`,
       [req.user.id, req.params.courseSlug, req.body.courseName, studentName, req.body.language, code]
     );
     const certificate = rows[0];
