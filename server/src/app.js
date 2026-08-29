@@ -57,6 +57,16 @@ app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+const maintenancePage = path.join(FRONTEND_ROOT, 'maintenance.html');
+app.locals.maintenancePage = maintenancePage;
+const pageAcceptsHtml = (req) => req.method === 'GET' && !req.path.startsWith('/api') && (req.headers.accept || '').includes('text/html');
+app.use((req, res, next) => {
+  if (env.MAINTENANCE_MODE && pageAcceptsHtml(req) && req.path !== '/maintenance.html') {
+    return res.sendFile(maintenancePage);
+  }
+  return next();
+});
+
 if (!env.isProd) {
   app.use(morgan('dev'));
 }

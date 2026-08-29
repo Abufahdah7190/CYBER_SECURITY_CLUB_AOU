@@ -36,6 +36,8 @@ module.exports = {
 
   COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || undefined,
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+  // Set MAINTENANCE_MODE=true in Render to show maintenance.html for page visits.
+  MAINTENANCE_MODE: /^(1|true|yes|on)$/i.test(process.env.MAINTENANCE_MODE || ''),
 
   // Email (Resend) — optional in dev; auth flows degrade gracefully
   // (log to console) when not configured, per Phase 4 scope.

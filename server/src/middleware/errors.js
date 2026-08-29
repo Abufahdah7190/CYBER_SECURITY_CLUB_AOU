@@ -22,6 +22,14 @@ function handleValidation(req, res, next) {
  */
 function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
   console.error('Unhandled error:', err);
+  const databaseError = Boolean(err && (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.code === '57P01' || /^08/.test(String(err.code || ''))));
+  const browserPage = req.method === 'GET' && !req.path.startsWith('/api') && (req.headers.accept || '').includes('text/html');
+  if (databaseError && browserPage && res.app.locals.maintenancePage) {
+    return res.status(503).sendFile(res.app.locals.maintenancePage);
+  }
+  if (databaseError && req.path.startsWith('/api')) {
+    return res.status(503).json({ error: 'الخدمة غير متاحة مؤقتًا بسبب مشكلة في قاعدة البيانات' });
+  }
 
   // Postgres unique_violation (duplicate email etc.) surfaced generically
   if (err && err.code === '23505') {
