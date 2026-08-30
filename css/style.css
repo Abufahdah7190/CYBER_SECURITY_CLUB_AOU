@@ -2039,6 +2039,10 @@ body.auth-locked #tab-auth {
 .certificate-actions-print { display: flex; justify-content: center; gap: 10px; margin-top: 24px; }
 @media print { .certificate-modal { position: static; background: #fff; padding: 0; } .certificate-sheet { width: 100%; min-height: 0; border-width: 8px; box-shadow: none; } .certificate-actions-print { display: none; } body > *:not(.certificate-modal) { display: none !important; } }
 @media (max-width: 600px) { #verify-form { flex-direction: column; } .certificate-sheet { padding: 28px 20px 20px; } .certificate-logos img { width: 65px; height: 65px; } .certificate-bottom { align-items: center; flex-direction: column; text-align: center; } }
+.certificate-lang-choice { min-height: 0; border-width: 8px; padding: 40px 32px; }
+.certificate-lang-options { display: flex; gap: 14px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.certificate-lang-options .btn { min-width: 160px; }
+.certificate-lang-options .btn.is-default { box-shadow: 0 0 0 3px rgba(0,229,255,.45); }
 
 /* Course page and accessible form controls */
 .auth-field select, .certificate-language select { width: 100%; min-height: 48px; border: 1px solid rgba(0, 229, 255, .35); border-radius: 12px; background: #081426; color: #eaf7ff; padding: 0 14px; font: inherit; }

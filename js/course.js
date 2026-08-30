@@ -29,11 +29,32 @@
     const moduleNamesEn = ['Core Concepts', 'Practical Application', 'Review and Assessment'];
     const topicsEn = ['Introduction and Orientation', 'Explanation and Analysis', 'Practice and Assessment'];
     const typeLabels = { video: ['فيديو تعليمي', 'Instructional video'], article: ['قراءة ومقال', 'Reading article'], lab: ['مختبر عملي', 'Hands-on lab'] };
+    // A slightly larger generic bank than a single fixed trio, so this
+    // preview/fallback path (used only for course slugs with no dedicated
+    // content in lms-data.js) doesn't repeat the exact same answer options
+    // on every lesson either.
+    const correctBank = [
+      { ar: `التوثيق والعمل ضمن نطاق مصرح به في سياق ${names[0]}`, en: `Documenting work within an authorized scope for ${names[1]}` },
+      { ar: 'التحقق من المصدر والصلاحيات قبل تنفيذ أي إجراء', en: 'Verifying source and permissions before taking any action' },
+      { ar: 'تسجيل الملاحظات ومراجعتها قبل الانتقال للخطوة التالية', en: 'Recording notes and reviewing them before moving to the next step' },
+    ];
+    const wrongBank = [
+      { ar: 'تجربة أي إجراء على نظام عام دون تصريح', en: 'Trying any action on a public system without authorization' },
+      { ar: 'مشاركة بيانات حساسة خارج القنوات الرسمية', en: 'Sharing sensitive data outside official channels' },
+      { ar: 'تخطي التوثيق للانتهاء بشكل أسرع', en: 'Skipping documentation to finish faster' },
+    ];
     const modules = moduleNames.map((moduleName, moduleIndex) => ({
       id: `${id}-m${moduleIndex + 1}`,
       title: { ar: `الوحدة ${moduleIndex + 1}: ${moduleName}`, en: `Module ${moduleIndex + 1}: ${moduleNamesEn[moduleIndex]}` },
       lessons: ['مقدمة وتمهيد', 'شرح وتحليل', 'تطبيق واختبار'].map((topic, lessonIndex) => {
         const type = ['video', 'article', 'lab'][(moduleIndex + lessonIndex) % 3];
+        const seed = moduleIndex * 3 + lessonIndex;
+        const correct = correctBank[seed % correctBank.length];
+        const wrong1 = wrongBank[seed % wrongBank.length];
+        const wrong2 = wrongBank[(seed + 1) % wrongBank.length];
+        const position = seed % 3;
+        const arOptions = [wrong1.ar, wrong2.ar]; arOptions.splice(position, 0, correct.ar);
+        const enOptions = [wrong1.en, wrong2.en]; enOptions.splice(position, 0, correct.en);
         return {
           id: `${id}-m${moduleIndex + 1}-l${lessonIndex + 1}`,
           title: { ar: `${moduleName}: ${topic}`, en: `${names[1]} — ${topicsEn[lessonIndex]}` },
@@ -41,7 +62,7 @@
           typeLabel: { ar: typeLabels[type][0], en: typeLabels[type][1] },
           body: { ar: `محتوى تمهيدي في دورة «${names[0]}». تعرّف على المفهوم، حلّل المثال، ثم طبّق الخطوات داخل بيئة تدريبية مصرح بها.`, en: `A guided lesson in ${names[1]}. Learn the concept, analyze the example, and apply the steps in an authorized training environment.` },
           steps: { ar: ['حدد الهدف والأصول المرتبطة بالدرس.', 'حلل المخاطر أو البيانات المتاحة.', 'وثّق النتيجة والخطوة التالية.'], en: ['Define the objective and related assets.', 'Analyze the available risks or evidence.', 'Document the result and next action.'] },
-          quiz: { ar: { question: `ما الممارسة الصحيحة في درس «${topic}»؟`, options: ['التوثيق والعمل ضمن نطاق مصرح', 'تجربة أي إجراء على نظام عام', 'مشاركة بيانات حساسة'], correct: 0 }, en: { question: `What is the correct practice in “${topic}”?`, options: ['Document work within an authorized scope', 'Try any action on a public system', 'Share sensitive data'], correct: 0 } }
+          quiz: { ar: { question: `ما الممارسة الصحيحة في درس «${topic}»؟`, options: arOptions, correct: position }, en: { question: `What is the correct practice in "${topic}"?`, options: enOptions, correct: position } }
         };
       })
     }));
@@ -139,6 +160,29 @@
   }
   function render() { renderHeader(); renderModules(); renderLesson(); renderStatus(); $('course-loading')?.setAttribute('hidden', ''); }
 
+  // Asks the student which language their certificate should be issued in,
+  // rather than silently tying it to whichever language they happened to be
+  // browsing in when they passed the final quiz. Resolves with 'ar' or 'en'.
+  function chooseCertificateLanguage() {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'certificate-modal';
+      overlay.innerHTML = `<div class="certificate-sheet certificate-lang-choice" dir="${lang === 'ar' ? 'rtl' : 'ltr'}">
+        <h2>${lang === 'ar' ? 'تهانينا! اخترت إتمام الدورة' : 'Congratulations on completing the course!'}</h2>
+        <p>${lang === 'ar' ? 'باللغة يمكن إصدار شهادتك؟' : 'Which language should your certificate be issued in?'}</p>
+        <div class="certificate-lang-options">
+          <button type="button" class="btn primary" data-lang="ar">العربية</button>
+          <button type="button" class="btn ghost" data-lang="en">English</button>
+        </div>
+      </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelectorAll('[data-lang]').forEach((button) => {
+        if (button.dataset.lang === lang) button.classList.add('is-default');
+        button.addEventListener('click', () => { overlay.remove(); resolve(button.dataset.lang); });
+      });
+    });
+  }
+
   async function completeLesson() {
     const item = flat()[current];
     const result = $('quiz-result');
@@ -157,7 +201,8 @@
       certificate = response.certificate || certificate;
       if (percent >= 100) {
         try {
-          const certificateResponse = await request(`/certificates/${slug}`, { method: 'POST', body: JSON.stringify({ courseName: text({ ar: course.ar, en: course.en }), language: lang }) });
+          const certificateLanguage = await chooseCertificateLanguage();
+          const certificateResponse = await request(`/certificates/${slug}`, { method: 'POST', body: JSON.stringify({ courseName: text({ ar: course.ar, en: course.en }), language: certificateLanguage }) });
           certificate = certificateResponse.certificate || certificate;
         } catch (certificateError) {
           console.warn('Certificate email or issuance follow-up failed:', certificateError.message);

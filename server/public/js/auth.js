@@ -162,16 +162,31 @@
     }
   }
 
+  // If another page (e.g. the profile page) bounced the visitor here because
+  // its own session check failed, honor ?return= once we confirm the session
+  // is actually valid — otherwise the visitor is silently stranded on the
+  // homepage instead of ending up back where they were headed.
+  function redirectToReturnTarget() {
+    const target = new URLSearchParams(window.location.search).get('return');
+    if (target && /^[a-zA-Z0-9_-]+\.html$/.test(target)) {
+      window.location.replace(target);
+      return true;
+    }
+    return false;
+  }
+
   async function loadCurrentUser() {
     try {
       const data = await request('/me');
       showUser(data.user);
+      redirectToReturnTarget();
       return;
     } catch (error) {
       // Try rotating the refresh token when the short-lived access token expired.
       try {
         const data = await request('/refresh', { method: 'POST', body: '{}' });
         showUser(data.user);
+        redirectToReturnTarget();
         return;
       } catch (_) {
         showForms();
