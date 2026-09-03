@@ -10,7 +10,12 @@ const { validationResult } = require('express-validator');
 function handleValidation(req, res, next) {
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).json({ error: 'بيانات غير صالحة', details: result.array().map((e) => e.msg) });
+    const details = result.array().map((e) => e.msg);
+    const universityEmailMessage = 'الموقع متاح فقط لطلاب الجامعة العربية المفتوحة بالبريد الجامعي الرسمي';
+    if (details.includes(universityEmailMessage)) {
+      return res.status(400).json({ error: universityEmailMessage });
+    }
+    return res.status(400).json({ error: 'بيانات غير صالحة', details });
   }
   return next();
 }

@@ -11,7 +11,7 @@ router.get('/profile', requireAuth, async (req, res, next) => {
     const [userResult, progressResult, certificateResult] = await Promise.all([
       pool.query(`SELECT id, first_name AS "firstName", last_name AS "lastName", email, role, phone, major, gender, created_at AS "createdAt" FROM users WHERE id = $1`, [req.user.id]),
       pool.query(`SELECT course_slug AS "courseSlug", percent, completed_at AS "completedAt", last_accessed_at AS "lastAccessedAt" FROM student_course_progress WHERE student_id = $1 ORDER BY last_accessed_at DESC`, [req.user.id]),
-      pool.query(`SELECT course_slug AS "courseSlug", course_name AS "courseName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt" FROM student_course_certificates WHERE student_id = $1 ORDER BY issued_at DESC`, [req.user.id]),
+      pool.query(`SELECT course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, certificate_code AS "certificateCode", issued_at AS "issuedAt" FROM student_course_certificates WHERE student_id = $1 ORDER BY issued_at DESC`, [req.user.id]),
     ]);
     if (!userResult.rows[0]) return res.status(404).json({ error: 'المستخدم غير موجود' });
     const progress = progressResult.rows;

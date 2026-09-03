@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DOMAINS = ['@gmail.com', '@outlook.com', '@hotmail.com', '@yahoo.com', '@aou.edu.sa'];
+  const DOMAINS = ['@aou.edu.sa', '@aou.edu'];
   const emailSelector = 'input[type="email"]';
   function hide(input) { const menu = input.parentElement.querySelector('.email-domain-menu'); if (menu) { menu.hidden = true; menu.innerHTML = ''; } input.removeAttribute('aria-activedescendant'); }
   function complete(input, domain) { const value = input.value.trim(); const at = value.lastIndexOf('@'); const local = (at >= 0 ? value.slice(0, at) : value).replace(/@+$/, ''); input.value = `${local}${domain}`; input.dispatchEvent(new Event('input', { bubbles: true })); hide(input); input.focus(); }

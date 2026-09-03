@@ -8,6 +8,24 @@
   const API_BASE = (window.CYBERCLUB_API_BASE || '').replace(/\/$/, '');
   const AUTH_URL = `${API_BASE}/api/auth`;
   const $ = (selector) => document.querySelector(selector);
+  const UNIVERSITY_EMAIL_PATTERN = /^[^\s@]+@(aou\.edu\.sa|aou\.edu)$/i;
+  const UNIVERSITY_EMAIL_MESSAGE = 'الموقع متاح فقط لطلاب الجامعة العربية المفتوحة بالبريد الجامعي الرسمي';
+
+  function validateUniversityEmailField(input) {
+    const value = String(input?.value || '').trim();
+    const isValid = !value || UNIVERSITY_EMAIL_PATTERN.test(value);
+    input?.setCustomValidity(isValid ? '' : UNIVERSITY_EMAIL_MESSAGE);
+    return isValid;
+  }
+
+  function validateUniversityEmailForm(form) {
+    const input = form?.querySelector('input[name="email"]');
+    if (!input || validateUniversityEmailField(input)) return true;
+    input.closest('.auth-field')?.classList.add('field-invalid');
+    setMessage(UNIVERSITY_EMAIL_MESSAGE, 'error');
+    input.focus();
+    return false;
+  }
 
   // Authentication credentials must never be kept in Web Storage. Remove
   // legacy keys from older builds in case the site was upgraded in-place.
@@ -148,7 +166,7 @@
   async function handleForgotPassword(event) {
     event.preventDefault();
     const form = event.currentTarget;
-    if (!form.reportValidity()) return;
+    if (!validateUniversityEmailForm(form) || !form.reportValidity()) return;
     setBusy(form, true);
     setMessage('');
     try {
@@ -228,6 +246,7 @@
       emptyFields[0].focus();
       return false;
     }
+    if (!validateUniversityEmailForm(form)) return false;
     return form.reportValidity();
   }
 
@@ -284,6 +303,16 @@
       field.addEventListener('invalid', () => field.closest('.auth-field')?.classList.add('field-invalid'), true);
     });
     forgot.addEventListener('submit', handleForgotPassword);
+    [register, forgot].forEach((form) => {
+      const emailInput = form.querySelector('input[name="email"]');
+      if (!emailInput) return;
+      emailInput.addEventListener('input', () => {
+        if (validateUniversityEmailField(emailInput)) {
+          emailInput.closest('.auth-field')?.classList.remove('field-invalid');
+        }
+      });
+      form.addEventListener('reset', () => emailInput.setCustomValidity(''));
+    });
     $('#logout-button').addEventListener('click', handleLogout);
     $('#header-logout-button')?.addEventListener('click', handleLogout);
     $('#account-menu-trigger')?.addEventListener('click', () => {

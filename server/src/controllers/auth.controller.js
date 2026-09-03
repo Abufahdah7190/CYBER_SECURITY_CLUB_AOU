@@ -276,6 +276,15 @@ async function changePassword(req, res, next) {
 async function forgotPassword(req, res, next) {
   try {
     const normalizedEmail = String(req.body.email).trim().toLowerCase();
+
+    // Reject non-university domains outright — this check doesn't leak
+    // whether an account exists (a non-AOU address never has one), so it's
+    // safe to return before the generic-response branch below.
+    const emailError = validateUniversityEmail(normalizedEmail);
+    if (emailError) {
+      return res.status(400).json({ error: emailError });
+    }
+
     const user = await usersRepo.findByEmail(normalizedEmail);
 
     // Always respond identically whether or not the email exists —
@@ -287,23 +296,25 @@ async function forgotPassword(req, res, next) {
       await tokensRepo.storePasswordResetToken({ userId: user.id, tokenHash: hashToken(rawToken), ttlMinutes: 30 });
       const resetUrl = `${env.FRONTEND_URL}/reset-password.html?token=${rawToken}`;
 
-      // Awaited (not fire-and-forget): sendEmail never throws (see
-      // utils/email.js), so this can't hang or crash the request — it
-      // just lets us know right away, server-side, whether the Gmail
-      // send actually succeeded.
-      const emailResult = await sendEmail({
-        to: user.email,
-        subject: 'إعادة تعيين كلمة المرور - نادي الأمن السيبراني',
-        html: `<div dir="rtl" style="font-family: Tahoma, sans-serif;">
-          <p>مرحبًا ${user.first_name}،</p>
-          <p>اضغط على الرابط التالي لإعادة تعيين كلمة المرور (صالح لمدة 30 دقيقة):</p>
-          <p><a href="${resetUrl}">${resetUrl}</a></p>
-          <p>إذا لم تطلب ذلك، تجاهل هذه الرسالة.</p>
-        </div>`,
+      // The reset token is saved before scheduling delivery, while the
+      // response itself remains independent from SMTP/API availability.
+      // This guarantees that the client exits its busy state immediately.
+      setImmediate(() => {
+        sendEmail({
+          to: user.email,
+          subject: 'إعادة تعيين كلمة المرور - نادي الأمن السيبراني',
+          html: `<div dir="rtl" style="font-family: Tahoma, sans-serif;">
+            <p>مرحبًا ${user.first_name}،</p>
+            <p>اضغط على الرابط التالي لإعادة تعيين كلمة المرور (صالح لمدة 30 دقيقة):</p>
+            <p><a href="${resetUrl}">${resetUrl}</a></p>
+            <p>إذا لم تطلب ذلك، تجاهل هذه الرسالة.</p>
+          </div>`,
+        }).then((emailResult) => {
+          if (!emailResult.success) console.error('Failed to send reset email:', emailResult.error);
+        }).catch((emailError) => {
+          console.error('Reset email delivery task failed:', emailError.message);
+        });
       });
-      if (!emailResult.success) {
-        console.error('Failed to send reset email:', emailResult.error);
-      }
 
       await recordAudit({ actorId: user.id, action: 'user.request_password_reset', entityType: 'user', entityId: user.id, req });
     }

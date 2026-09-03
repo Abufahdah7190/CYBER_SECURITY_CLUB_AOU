@@ -11,6 +11,7 @@
   let current = 0;
   let saved = { percent: 0, lastSection: 0, quizScores: {} };
   let certificate = null;
+  let isCompleting = false;
 
   const courseNames = {
     'cyber-basics': ['أساسيات الأمن السيبراني', 'Introduction to Cybersecurity'],
@@ -153,65 +154,69 @@
     const message = $('course-message');
     if (!message) return;
     if (certificate) {
-      message.innerHTML = lang === 'ar' ? `تهانينا! أتممت الدورة بنسبة 100%. رمز الشهادة: <strong>${certificate.certificateCode || ''}</strong> — يمكنك عرضها من ملف الطالب.` : `Congratulations! You completed the course with 100%. Certificate ID: <strong>${certificate.certificateCode || ''}</strong> — view it from your profile.`;
+      message.innerHTML = lang === 'ar' ? `تهانينا! أتممت الدورة بنسبة 100%. صدرَت شهادتك برمز <strong>${certificate.certificateCode || ''}</strong> وسيتم إرسالها تلقائيًا إلى بريدك الجامعي. يمكنك عرضها من ملف الطالب.` : `Congratulations! You completed the course with 100%. Your certificate ID is <strong>${certificate.certificateCode || ''}</strong> and it will be emailed automatically to your university address.`;
       return;
     }
     if (!message.textContent) message.textContent = '';
   }
   function render() { renderHeader(); renderModules(); renderLesson(); renderStatus(); $('course-loading')?.setAttribute('hidden', ''); }
 
-  // Asks the student which language their certificate should be issued in,
-  // rather than silently tying it to whichever language they happened to be
-  // browsing in when they passed the final quiz. Resolves with 'ar' or 'en'.
-  function chooseCertificateLanguage() {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'certificate-modal';
-      overlay.innerHTML = `<div class="certificate-sheet certificate-lang-choice" dir="${lang === 'ar' ? 'rtl' : 'ltr'}">
-        <h2>${lang === 'ar' ? 'تهانينا! اخترت إتمام الدورة' : 'Congratulations on completing the course!'}</h2>
-        <p>${lang === 'ar' ? 'باللغة يمكن إصدار شهادتك؟' : 'Which language should your certificate be issued in?'}</p>
-        <div class="certificate-lang-options">
-          <button type="button" class="btn primary" data-lang="ar">العربية</button>
-          <button type="button" class="btn ghost" data-lang="en">English</button>
-        </div>
-      </div>`;
-      document.body.appendChild(overlay);
-      overlay.querySelectorAll('[data-lang]').forEach((button) => {
-        if (button.dataset.lang === lang) button.classList.add('is-default');
-        button.addEventListener('click', () => { overlay.remove(); resolve(button.dataset.lang); });
-      });
-    });
+  function setCompletionBusy(busy) {
+    const button = $('complete-lesson');
+    if (!button) return;
+    button.dataset.originalText ||= button.textContent;
+    button.disabled = busy;
+    button.textContent = busy
+      ? (lang === 'ar' ? 'جارٍ حفظ التقدم...' : 'Saving progress...')
+      : button.dataset.originalText;
   }
 
   async function completeLesson() {
+    if (isCompleting) return;
     const item = flat()[current];
     const result = $('quiz-result');
     const questions = quizQuestions(item.lesson);
     const answers = questions.map((question, index) => document.querySelector(`input[name="lms-quiz-${index}"]:checked`));
-    if (!questions.length || answers.some((answer) => !answer)) { if (result) result.textContent = lang === 'ar' ? 'أجب عن جميع الأسئلة أولًا.' : 'Answer all questions first.'; return; }
+    if (!questions.length || answers.some((answer) => !answer)) {
+      if (result) result.textContent = lang === 'ar' ? 'أجب عن جميع الأسئلة أولًا.' : 'Answer all questions first.';
+      return;
+    }
     const correctAnswers = answers.reduce((total, answer, index) => total + (Number(answer.value) === Number(questions[index].correct) ? 1 : 0), 0);
     const scorePercent = Math.round((correctAnswers / questions.length) * 100);
-    if (scorePercent < 80) { if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}%. تحتاج إلى 80% على الأقل لإكمال الدرس.` : `Your score is ${scorePercent}%. You need at least 80% to complete this lesson.`; return; }
+    if (scorePercent < 80) {
+      if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}%. تحتاج إلى 80% على الأقل لإكمال الدرس.` : `Your score is ${scorePercent}%. You need at least 80% to complete this lesson.`;
+      return;
+    }
+
+    isCompleting = true;
+    setCompletionBusy(true);
     if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}% — تم اجتياز الاختبار.` : `Score: ${scorePercent}% — Quiz passed.`;
     const quizScores = { ...(saved.quizScores || {}), [current]: true };
     const percent = Math.round(Object.values(quizScores).filter(Boolean).length / flat().length * 100);
+
     try {
-      const response = await request(`/progress/${slug}`, { method: 'PUT', body: JSON.stringify({ percent, lastSection: current + 1, quizScores, language: lang, courseName: text({ ar: course.ar, en: course.en }) }) });
+      const response = await request(`/progress/${slug}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          percent,
+          lastSection: current + 1,
+          quizScores,
+          language: lang,
+          courseName: text({ ar: course.ar, en: course.en }),
+        }),
+      });
       saved = response.progress || { ...saved, percent, lastSection: current + 1, quizScores };
       certificate = response.certificate || certificate;
-      if (percent >= 100) {
-        try {
-          const certificateLanguage = await chooseCertificateLanguage();
-          const certificateResponse = await request(`/certificates/${slug}`, { method: 'POST', body: JSON.stringify({ courseName: text({ ar: course.ar, en: course.en }), language: certificateLanguage }) });
-          certificate = certificateResponse.certificate || certificate;
-        } catch (certificateError) {
-          console.warn('Certificate email or issuance follow-up failed:', certificateError.message);
-        }
+      if (percent >= 100 && !certificate && result) {
+        result.textContent = lang === 'ar' ? 'اكتمل التقدم، لكن تعذر إصدار الشهادة الآن. أعد تحميل الصفحة وحاول مرة أخرى.' : 'Progress was completed, but the certificate could not be issued. Reload and try again.';
       }
     } catch (error) {
-      saved = { ...saved, percent, lastSection: current + 1, quizScores };
-      if (result) result.textContent = `${lang === 'ar' ? 'تم حفظ التقدم محليًا مؤقتًا. ' : 'Progress saved temporarily locally. '}${error.message}`;
+      if (result) result.textContent = `${lang === 'ar' ? 'تعذر حفظ التقدم. ' : 'Could not save progress. '}${error.message}`;
+      return;
+    } finally {
+      isCompleting = false;
     }
+
     if (current < flat().length - 1) current += 1;
     render();
   }

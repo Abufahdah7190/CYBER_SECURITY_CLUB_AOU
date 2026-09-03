@@ -1,13 +1,29 @@
-'use strict';
-
 const express = require('express');
 const { body } = require('express-validator');
 const ctrl = require('../controllers/auth.controller');
 const { requireAuth } = require('../middleware/auth');
 const { handleValidation } = require('../middleware/errors');
 const { loginLimiter, registerLimiter, passwordResetLimiter } = require('../middleware/rateLimit');
+const { validateUniversityEmail, REJECTION_MESSAGE } = require('../utils/universityEmail');
 
 const router = express.Router();
+
+// Keep the domain check at the route boundary as well as in the controller.
+// This guarantees a direct, consistent error response before any account or
+// reset-token operation is attempted.
+function universityEmailField() {
+  return body('email')
+    .trim()
+    .custom((value) => {
+      const validationError = validateUniversityEmail(value);
+      if (validationError) throw new Error(validationError);
+      return true;
+    })
+    .bail()
+    .isEmail()
+    .withMessage(REJECTION_MESSAGE)
+    .normalizeEmail();
+}
 
 router.post(
   '/register',
@@ -15,7 +31,7 @@ router.post(
   [
     body('firstName').trim().isLength({ min: 2, max: 100 }).withMessage('الاسم الأول مطلوب'),
     body('lastName').trim().isLength({ min: 2, max: 100 }).withMessage('اسم العائلة مطلوب'),
-    body('email').trim().isEmail().withMessage('البريد الإلكتروني غير صالح').normalizeEmail(),
+    universityEmailField(),
     body('phone').trim().isMobilePhone('any').withMessage('رقم الهاتف غير صالح'),
     body('major').trim().isLength({ min: 2, max: 150 }).withMessage('التخصص مطلوب'),
     body('password').isString(),
@@ -68,7 +84,7 @@ router.post(
 router.post(
   '/forgot-password',
   passwordResetLimiter,
-  [body('email').trim().isEmail().withMessage('البريد الإلكتروني غير صالح').normalizeEmail()],
+  [universityEmailField()],
   handleValidation,
   ctrl.forgotPassword
 );
