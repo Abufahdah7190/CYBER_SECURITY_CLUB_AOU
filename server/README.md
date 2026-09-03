@@ -30,7 +30,7 @@
 | Audit Logs لكل حدث حساس (تسجيل، دخول، دخول فاشل، تغيير كلمة مرور...) | ✅ مُختبر |
 | حماية SQL Injection (parameterized queries في كل مكان) | ✅ مُختبر |
 | Helmet + CSP + rate limiting عام | ✅ مفعّل |
-| إرسال إيميلات عبر Resend (مع تسجيل بالـ console بدل الإرسال إذا لم يُضبط API key) | ✅ مُختبر (بوضع dev) |
+| إرسال إيميلات عبر Nodemailer + Gmail SMTP (مع تسجيل بالـ console بدل الإرسال إذا لم تُضبط بيانات الحساب) | ✅ مُختبر (بوضع dev) |
 
 ## التشغيل محليًا
 
@@ -87,11 +87,11 @@ curl http://localhost:3000/api/health
    npm run migrate
    ```
 
-### 3. البريد الإلكتروني — Resend (مجاني، اختياري الآن)
-عندما تكون جاهزًا:
-1. أنشئ حسابًا في [resend.com](https://resend.com) (3000 إيميل/شهر مجانًا).
-2. أضف نطاقك أو استخدم `onboarding@resend.dev` للتجربة.
-3. ضع `RESEND_API_KEY` في متغيرات البيئة على Render — بدون أي تعديل بالكود.
+### 3. البريد الإلكتروني — Gmail SMTP عبر Nodemailer (مجاني)
+1. فعّل **التحقق بخطوتين (2-Step Verification)** على حساب Gmail الذي سيرسل الإيميلات.
+2. من **Google Account → Security → App passwords**، أنشئ App Password جديدة (16 حرفًا) — لا تستخدم كلمة مرور Gmail العادية، لن تعمل.
+3. أضف `EMAIL_USER` (عنوان Gmail) و`EMAIL_PASS` (الـ App Password) في متغيرات البيئة على Render — بدون أي تعديل بالكود.
+4. هذا يرسل لأي مزوّد بريد (Gmail, Outlook, Yahoo...) بدون أي تحقق نطاق إضافي، على عكس نطاق Resend المجاني الذي كان يرفض (403 Forbidden) الإرسال لغير حساب Resend نفسه.
 
 ## ملاحظة أمان مهمة لمرحلة الواجهة القادمة
 

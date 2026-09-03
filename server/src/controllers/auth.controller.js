@@ -103,7 +103,9 @@ async function register(req, res, next) {
         <h2>أهلًا ${user.first_name}!</h2>
         <p>تم إنشاء حسابك بنجاح في منصة نادي الأمن السيبراني - الجامعة العربية المفتوحة (فرع الرياض).</p>
       </div>`,
-    }).catch((err) => console.error('Failed to send welcome email:', err.message));
+    }).then((result) => {
+      if (!result.success) console.error('Failed to send welcome email:', result.error);
+    });
 
     return res.status(201).json({ user: publicUser(user) });
   } catch (err) {
@@ -285,7 +287,11 @@ async function forgotPassword(req, res, next) {
       await tokensRepo.storePasswordResetToken({ userId: user.id, tokenHash: hashToken(rawToken), ttlMinutes: 30 });
       const resetUrl = `${env.FRONTEND_URL}/reset-password.html?token=${rawToken}`;
 
-      sendEmail({
+      // Awaited (not fire-and-forget): sendEmail never throws (see
+      // utils/email.js), so this can't hang or crash the request — it
+      // just lets us know right away, server-side, whether the Gmail
+      // send actually succeeded.
+      const emailResult = await sendEmail({
         to: user.email,
         subject: 'إعادة تعيين كلمة المرور - نادي الأمن السيبراني',
         html: `<div dir="rtl" style="font-family: Tahoma, sans-serif;">
@@ -294,7 +300,10 @@ async function forgotPassword(req, res, next) {
           <p><a href="${resetUrl}">${resetUrl}</a></p>
           <p>إذا لم تطلب ذلك، تجاهل هذه الرسالة.</p>
         </div>`,
-      }).catch((err) => console.error('Failed to send reset email:', err.message));
+      });
+      if (!emailResult.success) {
+        console.error('Failed to send reset email:', emailResult.error);
+      }
 
       await recordAudit({ actorId: user.id, action: 'user.request_password_reset', entityType: 'user', entityId: user.id, req });
     }

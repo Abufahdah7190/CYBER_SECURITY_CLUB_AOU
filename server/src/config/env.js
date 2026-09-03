@@ -39,10 +39,15 @@ module.exports = {
   // Set MAINTENANCE_MODE=true in Render to show maintenance.html for page visits.
   MAINTENANCE_MODE: /^(1|true|yes|on)$/i.test(process.env.MAINTENANCE_MODE || ''),
 
-  // Email (Resend) — optional in dev; auth flows degrade gracefully
-  // (log to console) when not configured, per Phase 4 scope.
-  RESEND_API_KEY: process.env.RESEND_API_KEY || '',
-  EMAIL_FROM: process.env.EMAIL_FROM || 'AOU Cyber Security Club <onboarding@resend.dev>',
+  // Email (Nodemailer + Gmail SMTP) — optional in dev; auth flows degrade
+  // gracefully (log to console) when not configured.
+  // EMAIL_USER: the sending Gmail address, e.g. clubname@gmail.com
+  // EMAIL_PASS: a 16-character Gmail App Password (NOT the normal Gmail
+  //   password — requires 2-Step Verification enabled on the account,
+  //   then Google Account > Security > App passwords).
+  EMAIL_USER: process.env.EMAIL_USER || '',
+  EMAIL_PASS: process.env.EMAIL_PASS || '',
+  EMAIL_FROM: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'AOU Cyber Security Club',
 
   // Registration is restricted to university student email addresses.
   // Configurable (not hardcoded) so the club can change/add domains later
