@@ -2324,3 +2324,15 @@ body.auth-locked #tab-auth {
 .provider-heading h3 { margin: 0; }
 .provider-heading p { margin: 4px 0 0; }
 .course-meta { display: flex; flex-wrap: wrap; gap: 10px 16px; line-height: 1.6; }
+
+/* ── Supabase Forms Status ─────────────────────────────────────────────────── */
+.form-status {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.form-status--info    { background: rgba(0,229,255,.1);  color: var(--accent);  border: 1px solid var(--accent); }
+.form-status--success { background: rgba(0,255,157,.1);  color: var(--good);    border: 1px solid var(--good); }
+.form-status--error   { background: rgba(255,45,85,.1);  color: var(--bad);     border: 1px solid var(--bad); }

@@ -502,5 +502,37 @@
     "joinUs": "انضم إلينا",
     "followUs": "تابعنا",
     "copyright": "© Cyber Security Club — الجامعة العربية المفتوحة"
+  },
+  "forms": {
+    "sending": "جارٍ الإرسال...",
+    "joinSuccess": "✅ تم إرسال طلب الانضمام بنجاح! سنتواصل معك قريباً.",
+    "suggestionSuccess": "✅ شكراً! تم استلام اقتراحك بنجاح.",
+    "error": "❌ حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
+  },
+  "joinForm": {
+    "title": "انضم إلى النادي",
+    "intro": "أكمل النموذج أدناه وسيتواصل معك فريق النادي.",
+    "fullName": "الاسم الكامل",
+    "studentId": "الرقم الجامعي (اختياري)",
+    "email": "البريد الإلكتروني الجامعي",
+    "emailPlaceholder": "student@aou.edu.sa",
+    "major": "التخصص (اختياري)",
+    "phone": "رقم الهاتف (اختياري)",
+    "motivation": "لماذا تريد الانضمام؟ (اختياري)",
+    "submitBtn": "إرسال الطلب"
+  },
+  "suggestionsForm": {
+    "title": "اقتراحات واستفسارات",
+    "intro": "شاركنا أفكارك أو استفساراتك وسنأخذها بعين الاعتبار.",
+    "name": "الاسم (اختياري)",
+    "email": "البريد الإلكتروني (اختياري)",
+    "category": "النوع",
+    "categoryPlaceholder": "اختر النوع",
+    "categorySuggestion": "اقتراح",
+    "categoryQuestion": "استفسار",
+    "categoryComplaint": "شكوى",
+    "categoryOther": "أخرى",
+    "message": "الرسالة",
+    "submitBtn": "إرسال"
   }
 }
