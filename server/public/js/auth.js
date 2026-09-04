@@ -73,9 +73,17 @@
     button.textContent = busy ? 'جارٍ التنفيذ...' : button.dataset.originalText;
   }
 
+  // These two panels are public footer forms (suggestions / join us) that
+  // must stay reachable whether or not the visitor is logged in, so the
+  // auth lock/unlock logic below skips them instead of forcing display:none.
+  const PUBLIC_PANEL_IDS = ['tab-contact', 'join-form-section'];
+
   function unlockSite() {
     document.body.classList.remove('auth-locked');
-    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-home' ? 'block' : 'none'; });
+    document.querySelectorAll('.panel').forEach((panel) => {
+      if (PUBLIC_PANEL_IDS.includes(panel.id)) return;
+      panel.style.display = panel.id === 'tab-home' ? 'block' : 'none';
+    });
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'home'));
     const authPanel = $('#tab-auth');
     if (authPanel) authPanel.style.display = 'none';
@@ -91,7 +99,10 @@
 
   function lockSite() {
     document.body.classList.add('auth-locked');
-    document.querySelectorAll('.panel').forEach((panel) => { panel.style.display = panel.id === 'tab-auth' ? 'block' : 'none'; });
+    document.querySelectorAll('.panel').forEach((panel) => {
+      if (PUBLIC_PANEL_IDS.includes(panel.id)) return;
+      panel.style.display = panel.id === 'tab-auth' ? 'block' : 'none';
+    });
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === 'auth'));
     const authTab = document.querySelector('[data-tab="auth"]');
     if (authTab) authTab.hidden = false;

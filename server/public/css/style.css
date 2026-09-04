@@ -1944,9 +1944,12 @@ backdrop-filter: blur(10px);
 .auth-form-intro h3 { margin: 0 0 6px; color: var(--text); }
 .auth-form-intro p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
 
-/* Authentication gate: visitors must sign in or register before browsing. */
+/* Authentication gate: visitors must sign in or register before browsing.
+ * #tab-contact (الاقتراحات) and #join-form-section (انضم إلينا) are excluded
+ * on purpose: they are public footer forms that visitors who are not yet
+ * members must be able to reach without logging in first. */
 body.auth-locked .tabs .tab:not(.auth-tab),
-body.auth-locked .panel-wrap > .panel:not(#tab-auth) {
+body.auth-locked .panel-wrap > .panel:not(#tab-auth):not(#tab-contact):not(#join-form-section) {
   display: none !important;
 }
 
