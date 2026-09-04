@@ -21,7 +21,7 @@
 <!-- (browsers only honor them as real HTTP response headers). If this site is -->
 <!-- deployed behind a web server, also send: -->
 <!-- Content-Security-Policy: frame-ancestors 'self'  (and/or X-Frame-Options: SAMEORIGIN) -->
-<meta content="default-src 'self'; script-src 'self' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" http-equiv="Content-Security-Policy"/>
+<meta content="default-src 'self'; script-src 'self' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.supabase.in; object-src 'none'; base-uri 'self'; form-action 'self';" http-equiv="Content-Security-Policy"/>
 <link href="css/style.css" rel="stylesheet"/>
 </head>
 <body class="auth-locked">
@@ -918,23 +918,24 @@
 <section class="panel" id="tab-contact" style="display:none">
 <div class="feedback-container">
 <h2 data-i18n="contact.title" style="color: var(--accent2); margin-bottom: 12px;">تواصل معنا</h2>
-<form class="feedback-form" id="contact-form">
+<form class="feedback-form" id="suggestion-form">
 <div class="form-group">
-<label data-i18n="contact.nameLabel">الاسم</label>
-<input required="" type="text"/>
+<label data-i18n="contact.nameLabel" for="suggestion-name">الاسم</label>
+<input id="suggestion-name" name="name" required="" type="text" autocomplete="name"/>
 </div>
 <div class="form-group">
-<label data-i18n="contact.emailLabel">البريد الإلكتروني</label>
-<input required="" type="email"/>
+<label data-i18n="contact.emailLabel" for="suggestion-email">البريد الإلكتروني</label>
+<input id="suggestion-email" name="email" required="" type="email" autocomplete="email"/>
 </div>
 <div class="form-group">
-<label data-i18n="contact.messageLabel">الرسالة</label>
-<textarea required="" rows="4"></textarea>
+<label data-i18n="contact.messageLabel" for="suggestion-message">الرسالة</label>
+<textarea id="suggestion-message" name="message" required="" rows="4"></textarea>
 </div>
 <div class="form-actions">
-<button class="btn primary" data-i18n="contact.submitBtn" type="submit">إرسال</button>
+<button class="btn primary" id="suggestion-submit" data-i18n="contact.submitBtn" type="submit">إرسال</button>
 <button class="btn ghost" data-i18n="contact.resetBtn" type="reset">مسح</button>
 </div>
+<p id="suggestion-status" aria-live="polite" style="margin:10px 0 0;font-weight:700;"></p>
 </form>
 </div>
 </section>
@@ -1040,10 +1041,27 @@
 </div>
 </section>
 </div>
+<section class="panel" id="join-form-section" hidden style="margin-top:14px;">
+<div class="feedback-container">
+<h2 data-i18n="footer.joinUs" style="color:var(--accent2);margin-bottom:12px;">انضم إلينا</h2>
+<form class="feedback-form" id="join-form">
+<div class="form-group"><label for="join-name">الاسم الكامل</label><input id="join-name" name="name" required type="text" autocomplete="name"/></div>
+<div class="form-group"><label for="join-email">البريد الإلكتروني</label><input id="join-email" name="email" required type="email" autocomplete="email"/></div>
+<div class="form-group"><label for="join-phone">رقم الجوال</label><input id="join-phone" name="phone" type="tel" autocomplete="tel"/></div>
+<div class="form-group"><label for="join-major">التخصص</label><input id="join-major" name="major" required type="text"/></div>
+<div class="form-group"><label for="join-message">لماذا ترغب في الانضمام للنادي؟</label><textarea id="join-message" name="message" rows="4"></textarea></div>
+<div class="form-actions">
+<button class="btn primary" id="join-submit" type="submit">إرسال طلب الانضمام</button>
+<button class="btn ghost" id="close-join-form" type="button">إلغاء</button>
+</div>
+<p id="join-status" aria-live="polite" style="margin:10px 0 0;font-weight:700;"></p>
+</form>
+</div>
+</section>
 <footer style="margin-top:14px;text-align:center;color:var(--muted);font-size:12px;">
 <div class="footer-actions" style="margin-bottom:6px;">
-<a class="footer-btn" data-i18n="footer.suggestions" href="https://docs.google.com/forms/d/e/1FAIpQLScOGOr0VPP-P_3usZzOWw4SnfW15cdIPMjV250iqXe-3fm8Lw/viewform" rel="noopener" target="_blank">اقتراحات واستفسارات</a>
-<a class="footer-btn" data-i18n="footer.joinUs" href="https://docs.google.com/forms/d/e/1FAIpQLSc86aSraH4uWiIQA9PIRXxj3hCgucq_L1QZiWg5p4ZEJbTBeA/viewform#ffffff%20%23000000" rel="noopener" target="_blank">انضم إلينا</a>
+<button class="footer-btn" data-i18n="footer.suggestions" id="open-suggestion-form" type="button">اقتراحات واستفسارات</button>
+<button class="footer-btn" data-i18n="footer.joinUs" id="open-join-form" type="button">انضم إلينا</button>
 </div>
 <div data-i18n="footer.followUs" style="margin-bottom:6px;color:var(--muted2);">تابعنا</div>
 <div class="socials" style="justify-content:center; margin-bottom:8px;">
@@ -1056,6 +1074,8 @@
 <!-- Three.js and Globe.gl -->
 <script src="js/vendor/globe.gl.min.js"></script>
 <script src="js/locales.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/dynamic-i18n.js"></script>
 <script src="js/password-analysis.js"></script>

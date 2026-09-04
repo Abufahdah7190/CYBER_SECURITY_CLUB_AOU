@@ -39,14 +39,135 @@ function secureRandomInt(max) {
 }
 
 // --- Contact Form ---
-function initContactForm() {
-  const form = document.getElementById('contact-form');
+function initSuggestionForm() {
+  const form = document.getElementById('suggestion-form');
   if (!form) return;
-  form.addEventListener('submit', (e) => {
+
+  const status = document.getElementById('suggestion-status');
+  const submitButton = document.getElementById('suggestion-submit');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert(window.i18nValue ? window.i18nValue('contact.submitSuccess') : '');
+    if (!window.supabaseClient) {
+      status.textContent = 'تعذر الاتصال بقاعدة البيانات. تحقق من إعدادات Supabase.';
+      status.style.color = 'var(--bad)';
+      return;
+    }
+
+    const payload = {
+      name: document.getElementById('suggestion-name').value.trim(),
+      email: document.getElementById('suggestion-email').value.trim(),
+      message: document.getElementById('suggestion-message').value.trim()
+    };
+
+    if (!payload.name || !payload.email || !payload.message) {
+      status.textContent = 'يرجى تعبئة جميع الحقول المطلوبة.';
+      status.style.color = 'var(--bad)';
+      return;
+    }
+
+    try {
+      submitButton.disabled = true;
+      const original = submitButton.textContent;
+      submitButton.textContent = 'جارٍ الإرسال...';
+      status.textContent = '';
+
+      const { error } = await window.supabaseClient.from('suggestions').insert(payload);
+      if (error) throw error;
+
+      status.textContent = 'تم إرسال اقتراحك بنجاح. شكرًا لمساهمتك!';
+      status.style.color = 'var(--good)';
+      form.reset();
+      submitButton.textContent = original;
+    } catch (error) {
+      console.error('Supabase suggestions error:', error);
+      status.textContent = 'حدث خطأ أثناء الإرسال. تأكد من إعدادات الجدول وRLS ثم حاول مرة أخرى.';
+      status.style.color = 'var(--bad)';
+      submitButton.textContent = 'إرسال';
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
+
+function initJoinForm() {
+  const openButton = document.getElementById('open-join-form');
+  const closeButton = document.getElementById('close-join-form');
+  const section = document.getElementById('join-form-section');
+  const form = document.getElementById('join-form');
+  if (!form || !section) return;
+
+  const status = document.getElementById('join-status');
+  const submitButton = document.getElementById('join-submit');
+
+  openButton?.addEventListener('click', () => {
+    section.hidden = false;
+    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('join-name')?.focus();
+  });
+
+  closeButton?.addEventListener('click', () => {
+    section.hidden = true;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!window.supabaseClient) {
+      status.textContent = 'تعذر الاتصال بقاعدة البيانات. تحقق من إعدادات Supabase.';
+      status.style.color = 'var(--bad)';
+      return;
+    }
+
+    const payload = {
+      name: document.getElementById('join-name').value.trim(),
+      email: document.getElementById('join-email').value.trim(),
+      phone: document.getElementById('join-phone').value.trim() || null,
+      major: document.getElementById('join-major').value.trim(),
+      message: document.getElementById('join-message').value.trim() || null
+    };
+
+    if (!payload.name || !payload.email || !payload.major) {
+      status.textContent = 'يرجى تعبئة الحقول المطلوبة.';
+      status.style.color = 'var(--bad)';
+      return;
+    }
+
+    try {
+      submitButton.disabled = true;
+      submitButton.textContent = 'جارٍ إرسال الطلب...';
+      status.textContent = '';
+
+      const { error } = await window.supabaseClient.from('join_applications').insert(payload);
+      if (error) throw error;
+
+      status.textContent = 'تم إرسال طلب الانضمام بنجاح!';
+      status.style.color = 'var(--good)';
+      form.reset();
+    } catch (error) {
+      console.error('Supabase join applications error:', error);
+      status.textContent = 'حدث خطأ أثناء إرسال الطلب. تأكد من إعدادات الجدول وRLS ثم حاول مرة أخرى.';
+      status.style.color = 'var(--bad)';
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = 'إرسال طلب الانضمام';
+    }
+  });
+}
+
+function initSuggestionButton() {
+  const button = document.getElementById('open-suggestion-form');
+  const form = document.getElementById('suggestion-form');
+  if (!button || !form) return;
+  button.addEventListener('click', () => {
+    const contact = document.getElementById('tab-contact');
+    if (contact) {
+      contact.style.display = '';
+      contact.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    document.getElementById('suggestion-name')?.focus();
+  });
+}
+
 
 // --- Tab Navigation ---
 function initTabs() {
@@ -1342,7 +1463,9 @@ function startApp() {
   if (appStarted) return;
   appStarted = true;
   initTabs();
-  initContactForm();
+  initSuggestionForm();
+  initJoinForm();
+  initSuggestionButton();
   initThemeToggle();
   initOrgToggle();
   initLinkChecker();

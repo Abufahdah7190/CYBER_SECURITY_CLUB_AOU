@@ -477,38 +477,6 @@ window.LOCALES = {
     "joinUs": "انضم إلينا",
     "followUs": "تابعنا",
     "copyright": "© Cyber Security Club — الجامعة العربية المفتوحة"
-  },
-  "forms": {
-    "sending": "جارٍ الإرسال...",
-    "joinSuccess": "✅ تم إرسال طلب الانضمام بنجاح! سنتواصل معك قريباً.",
-    "suggestionSuccess": "✅ شكراً! تم استلام اقتراحك بنجاح.",
-    "error": "❌ حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
-  },
-  "joinForm": {
-    "title": "انضم إلى النادي",
-    "intro": "أكمل النموذج أدناه وسيتواصل معك فريق النادي.",
-    "fullName": "الاسم الكامل",
-    "studentId": "الرقم الجامعي (اختياري)",
-    "email": "البريد الإلكتروني الجامعي",
-    "emailPlaceholder": "student@aou.edu.sa",
-    "major": "التخصص (اختياري)",
-    "phone": "رقم الهاتف (اختياري)",
-    "motivation": "لماذا تريد الانضمام؟ (اختياري)",
-    "submitBtn": "إرسال الطلب"
-  },
-  "suggestionsForm": {
-    "title": "اقتراحات واستفسارات",
-    "intro": "شاركنا أفكارك أو استفساراتك وسنأخذها بعين الاعتبار.",
-    "name": "الاسم (اختياري)",
-    "email": "البريد الإلكتروني (اختياري)",
-    "category": "النوع",
-    "categoryPlaceholder": "اختر النوع",
-    "categorySuggestion": "اقتراح",
-    "categoryQuestion": "استفسار",
-    "categoryComplaint": "شكوى",
-    "categoryOther": "أخرى",
-    "message": "الرسالة",
-    "submitBtn": "إرسال"
   }
 },
   en: {
@@ -988,38 +956,6 @@ window.LOCALES = {
     "joinUs": "Join Us",
     "followUs": "Follow Us",
     "copyright": "© Cyber Security Club — Arab Open University"
-  },
-  "forms": {
-    "sending": "Sending...",
-    "joinSuccess": "✅ Your application was submitted successfully! We'll be in touch soon.",
-    "suggestionSuccess": "✅ Thank you! Your suggestion has been received.",
-    "error": "❌ An error occurred while sending. Please try again."
-  },
-  "joinForm": {
-    "title": "Join the Club",
-    "intro": "Fill in the form below and the club team will get back to you.",
-    "fullName": "Full Name",
-    "studentId": "Student ID (optional)",
-    "email": "University Email",
-    "emailPlaceholder": "student@aou.edu.sa",
-    "major": "Major (optional)",
-    "phone": "Phone Number (optional)",
-    "motivation": "Why do you want to join? (optional)",
-    "submitBtn": "Submit Application"
-  },
-  "suggestionsForm": {
-    "title": "Suggestions & Inquiries",
-    "intro": "Share your ideas or questions and we'll take them into consideration.",
-    "name": "Name (optional)",
-    "email": "Email (optional)",
-    "category": "Type",
-    "categoryPlaceholder": "Select type",
-    "categorySuggestion": "Suggestion",
-    "categoryQuestion": "Question",
-    "categoryComplaint": "Complaint",
-    "categoryOther": "Other",
-    "message": "Message",
-    "submitBtn": "Send"
   }
 }
 };

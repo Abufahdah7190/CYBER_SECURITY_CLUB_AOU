@@ -21,7 +21,7 @@
 <!-- (browsers only honor them as real HTTP response headers). If this site is -->
 <!-- deployed behind a web server, also send: -->
 <!-- Content-Security-Policy: frame-ancestors 'self'  (and/or X-Frame-Options: SAMEORIGIN) -->
-<meta content="default-src 'self'; script-src 'self' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" http-equiv="Content-Security-Policy"/>
+<meta content="default-src 'self'; script-src 'self' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.supabase.in; object-src 'none'; base-uri 'self'; form-action 'self';" http-equiv="Content-Security-Policy"/>
 <link href="css/style.css" rel="stylesheet"/>
 </head>
 <body class="auth-locked">
@@ -918,23 +918,24 @@
 <section class="panel" id="tab-contact" style="display:none">
 <div class="feedback-container">
 <h2 data-i18n="contact.title" style="color: var(--accent2); margin-bottom: 12px;">تواصل معنا</h2>
-<form class="feedback-form" id="contact-form">
+<form class="feedback-form" id="suggestion-form">
 <div class="form-group">
-<label data-i18n="contact.nameLabel">الاسم</label>
-<input required="" type="text"/>
+<label data-i18n="contact.nameLabel" for="suggestion-name">الاسم</label>
+<input id="suggestion-name" name="name" required="" type="text" autocomplete="name"/>
 </div>
 <div class="form-group">
-<label data-i18n="contact.emailLabel">البريد الإلكتروني</label>
-<input required="" type="email"/>
+<label data-i18n="contact.emailLabel" for="suggestion-email">البريد الإلكتروني</label>
+<input id="suggestion-email" name="email" required="" type="email" autocomplete="email"/>
 </div>
 <div class="form-group">
-<label data-i18n="contact.messageLabel">الرسالة</label>
-<textarea required="" rows="4"></textarea>
+<label data-i18n="contact.messageLabel" for="suggestion-message">الرسالة</label>
+<textarea id="suggestion-message" name="message" required="" rows="4"></textarea>
 </div>
 <div class="form-actions">
-<button class="btn primary" data-i18n="contact.submitBtn" type="submit">إرسال</button>
+<button class="btn primary" id="suggestion-submit" data-i18n="contact.submitBtn" type="submit">إرسال</button>
 <button class="btn ghost" data-i18n="contact.resetBtn" type="reset">مسح</button>
 </div>
+<p id="suggestion-status" aria-live="polite" style="margin:10px 0 0;font-weight:700;"></p>
 </form>
 </div>
 </section>
@@ -1040,10 +1041,27 @@
 </div>
 </section>
 </div>
+<section class="panel" id="join-form-section" hidden style="margin-top:14px;">
+<div class="feedback-container">
+<h2 data-i18n="footer.joinUs" style="color:var(--accent2);margin-bottom:12px;">انضم إلينا</h2>
+<form class="feedback-form" id="join-form">
+<div class="form-group"><label for="join-name">الاسم الكامل</label><input id="join-name" name="name" required type="text" autocomplete="name"/></div>
+<div class="form-group"><label for="join-email">البريد الإلكتروني</label><input id="join-email" name="email" required type="email" autocomplete="email"/></div>
+<div class="form-group"><label for="join-phone">رقم الجوال</label><input id="join-phone" name="phone" type="tel" autocomplete="tel"/></div>
+<div class="form-group"><label for="join-major">التخصص</label><input id="join-major" name="major" required type="text"/></div>
+<div class="form-group"><label for="join-message">لماذا ترغب في الانضمام للنادي؟</label><textarea id="join-message" name="message" rows="4"></textarea></div>
+<div class="form-actions">
+<button class="btn primary" id="join-submit" type="submit">إرسال طلب الانضمام</button>
+<button class="btn ghost" id="close-join-form" type="button">إلغاء</button>
+</div>
+<p id="join-status" aria-live="polite" style="margin:10px 0 0;font-weight:700;"></p>
+</form>
+</div>
+</section>
 <footer style="margin-top:14px;text-align:center;color:var(--muted);font-size:12px;">
 <div class="footer-actions" style="margin-bottom:6px;">
-<button class="footer-btn" data-i18n="suggestionsForm.title" onclick="document.getElementById('modal-suggestions').hidden=false">اقتراحات واستفسارات</button>
-<button class="footer-btn" data-i18n="joinForm.title" onclick="document.getElementById('modal-join').hidden=false">انضم إلينا</button>
+<button class="footer-btn" data-i18n="footer.suggestions" id="open-suggestion-form" type="button">اقتراحات واستفسارات</button>
+<button class="footer-btn" data-i18n="footer.joinUs" id="open-join-form" type="button">انضم إلينا</button>
 </div>
 <div data-i18n="footer.followUs" style="margin-bottom:6px;color:var(--muted2);">تابعنا</div>
 <div class="socials" style="justify-content:center; margin-bottom:8px;">
@@ -1056,6 +1074,8 @@
 <!-- Three.js and Globe.gl -->
 <script src="js/vendor/globe.gl.min.js"></script>
 <script src="js/locales.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/dynamic-i18n.js"></script>
 <script src="js/password-analysis.js"></script>
@@ -1069,65 +1089,5 @@
 <script src="js/course-catalog-i18n.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/attack-map.js"></script>
-<script>
-// Supabase public config — replace with your project values
-window.SUPABASE_URL = 'YOUR_SUPABASE_URL';
-window.SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-</script>
-<script src="js/supabase-forms.js"></script>
-
-<!-- Modal: Join Form -->
-<div id="modal-join" hidden role="dialog" aria-modal="true" aria-labelledby="modal-join-title"
-  style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px;">
-  <div style="background:var(--panel,#0d1b2e);border:1px solid var(--glass-border,rgba(255,255,255,.1));border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;position:relative;">
-    <button onclick="document.getElementById('modal-join').hidden=true" aria-label="إغلاق"
-      style="position:absolute;top:12px;inset-inline-end:14px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
-    <h2 id="modal-join-title" data-i18n="joinForm.title" style="color:var(--accent2);margin:0 0 6px;">انضم إلى النادي</h2>
-    <p data-i18n="joinForm.intro" style="color:var(--muted);font-size:13px;margin:0 0 18px;">أكمل النموذج أدناه وسيتواصل معك فريق النادي.</p>
-    <div id="join-form-status" hidden class="form-status" role="status" aria-live="polite"></div>
-    <form id="join-form" novalidate style="display:flex;flex-direction:column;gap:12px;">
-      <div class="auth-field"><label data-i18n="joinForm.fullName">الاسم الكامل</label><input name="fullName" type="text" required minlength="2"></div>
-      <div class="auth-field"><label data-i18n="joinForm.studentId">الرقم الجامعي (اختياري)</label><input name="studentId" type="text"></div>
-      <div class="auth-field"><label data-i18n="joinForm.email">البريد الإلكتروني الجامعي</label><input name="email" type="email" required placeholder="student@aou.edu.sa" pattern="[^\s@]+@(aou\.edu\.sa|aou\.edu)"></div>
-      <div class="auth-field"><label data-i18n="joinForm.major">التخصص (اختياري)</label><input name="major" type="text"></div>
-      <div class="auth-field"><label data-i18n="joinForm.phone">رقم الهاتف (اختياري)</label><input name="phone" type="tel"></div>
-      <div class="auth-field"><label data-i18n="joinForm.motivation">لماذا تريد الانضمام؟ (اختياري)</label><textarea name="motivation" rows="3" style="resize:vertical;"></textarea></div>
-      <button class="btn primary" type="submit" data-i18n="joinForm.submitBtn">إرسال الطلب</button>
-    </form>
-  </div>
-</div>
-
-<!-- Modal: Suggestions Form -->
-<div id="modal-suggestions" hidden role="dialog" aria-modal="true" aria-labelledby="modal-suggestions-title"
-  style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px;">
-  <div style="background:var(--panel,#0d1b2e);border:1px solid var(--glass-border,rgba(255,255,255,.1));border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;position:relative;">
-    <button onclick="document.getElementById('modal-suggestions').hidden=true" aria-label="إغلاق"
-      style="position:absolute;top:12px;inset-inline-end:14px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
-    <h2 id="modal-suggestions-title" data-i18n="suggestionsForm.title" style="color:var(--accent2);margin:0 0 6px;">اقتراحات واستفسارات</h2>
-    <p data-i18n="suggestionsForm.intro" style="color:var(--muted);font-size:13px;margin:0 0 18px;">شاركنا أفكارك أو استفساراتك وسنأخذها بعين الاعتبار.</p>
-    <div id="suggestions-form-status" hidden class="form-status" role="status" aria-live="polite"></div>
-    <form id="suggestions-form" novalidate style="display:flex;flex-direction:column;gap:12px;">
-      <div class="auth-field"><label data-i18n="suggestionsForm.name">الاسم (اختياري)</label><input name="name" type="text"></div>
-      <div class="auth-field"><label data-i18n="suggestionsForm.email">البريد الإلكتروني (اختياري)</label><input name="email" type="email"></div>
-      <div class="auth-field"><label data-i18n="suggestionsForm.category">النوع</label>
-        <select name="category">
-          <option value="" data-i18n="suggestionsForm.categoryPlaceholder">اختر النوع</option>
-          <option value="suggestion" data-i18n="suggestionsForm.categorySuggestion">اقتراح</option>
-          <option value="question" data-i18n="suggestionsForm.categoryQuestion">استفسار</option>
-          <option value="complaint" data-i18n="suggestionsForm.categoryComplaint">شكوى</option>
-          <option value="other" data-i18n="suggestionsForm.categoryOther">أخرى</option>
-        </select>
-      </div>
-      <div class="auth-field"><label data-i18n="suggestionsForm.message">الرسالة</label><textarea name="message" rows="4" required style="resize:vertical;"></textarea></div>
-      <button class="btn primary" type="submit" data-i18n="suggestionsForm.submitBtn">إرسال</button>
-   
-
-    </form>
-  </div>
-</div>
- <script>
-  window.SUPABASE_URL = 'https://znstsbqsrbjbzhaxjaxe.supabase.co';
-  window.SUPABASE_ANON_KEY = 'sb_publishable_9lcAuDmyfwAW9l9gupbT8Q_imlN_oci';
-</script>
 </body>
 </html>
