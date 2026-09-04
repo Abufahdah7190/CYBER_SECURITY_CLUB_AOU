@@ -2,7 +2,7 @@
  * Replace the two placeholders below with your Supabase Project URL and anon public key.
  * NEVER put the service_role key in this file.
  */
-const SUPABASE_URL = window.SUPABASE_URL || 'https://znsbsbqsrbjbhaxjaxe.supabase.co';
+const SUPABASE_URL = window.SUPABASE_URL || 'https://znsbsbqsrbjbzhaxjaxe.supabase.co';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_9lcAuDmyfwAW9l9gupbT8Q_imlN_oci';
 
 window.supabaseClient = null;
