@@ -123,7 +123,7 @@ function initJoinForm() {
       email: document.getElementById('join-email').value.trim(),
       phone: document.getElementById('join-phone').value.trim() || null,
       major: document.getElementById('join-major').value.trim(),
-      message: document.getElementById('join-message').value.trim() || null
+      reason_to_join: document.getElementById('join-message').value.trim() || null
     };
 
     if (!payload.name || !payload.email || !payload.major) {
