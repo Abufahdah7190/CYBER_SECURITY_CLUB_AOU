@@ -79,7 +79,9 @@ async function issueCertificate({ studentId, courseSlug, courseName, studentName
   const existing = existingResult.rows[0];
 
   if (existing) {
-    if (!updateExisting) return { certificate: publicCertificate(existing), created: false };
+    if (!updateExisting && existing.theme === safeTheme) {
+      return { certificate: publicCertificate(existing), created: false };
+    }
     const updatedResult = await pool.query(
       `UPDATE student_course_certificates
           SET course_name = $3, student_name = $4, language = $5, theme = $6
@@ -131,7 +133,7 @@ function commonFields(certificate) {
     issueDate,
     isEn,
     documentDirection: isEn ? 'ltr' : 'rtl',
-    title: isEn ? 'CERTIFICATE OF COMPLETION' : 'شهادة إتمام دورة',
+    title: isEn ? 'CERTIFICATE OF COMPLETION' : 'شهادة إتمام',
     awardedTo: isEn ? 'This is proudly presented to' : 'تمنح هذه الشهادة فخراً إلى',
     statement: isEn ? 'for successfully completing the course' : 'لاجتيازه بنجاح متطلبات الدورة التدريبية',
     awardedDay: isEn ? 'Issued on' : 'تاريخ الإصدار:',
@@ -141,25 +143,17 @@ function commonFields(certificate) {
 }
 
 function circuitFan(x, y, dx, dy, color) {
-  const seg = 38;
+  const seg = 35;
   const lines = [];
   const nodes = [];
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < 4; i += 1) {
     const x1 = x;
     const y1 = y + dy * i * seg;
-    const x2 = x + dx * (110 + i * 25);
+    const x2 = x + dx * (90 + i * 20);
     lines.push(`M${x1} ${y1} H${x2}`);
-    nodes.push(`<circle cx="${x2}" cy="${y1}" r="3"/>`);
+    nodes.push(`<circle cx="${x2}" cy="${y1}" r="2.5"/>`);
   }
-  return `<g stroke="${color}" stroke-width="1.5" fill="none" opacity="0.4">${lines.map((d) => `<path d="${d}"/>`).join('')}</g><g fill="${color}" opacity="0.7">${nodes.join('')}</g>`;
-}
-
-function badgeGroup({ cx, cy, size, plate, logo }) {
-  const r = size / 2;
-  const plateCircle = plate
-    ? `<circle cx="${cx}" cy="${cy}" r="${r + 6}" fill="#0d1b2a" stroke="#00e5ff" stroke-width="2"/>`
-    : `<circle cx="${cx}" cy="${cy}" r="${r + 6}" fill="#ffffff" stroke="#dfe3ea" stroke-width="2"/>`;
-  return `<g>${plateCircle}<image x="${cx - r}" y="${cy - r}" width="${size}" height="${size}" href="${logo}" preserveAspectRatio="xMidYMid meet"/></g>`;
+  return `<g stroke="${color}" stroke-width="1.2" fill="none" opacity="0.35">${lines.map((d) => `<path d="${d}"/>`).join('')}</g><g fill="${color}" opacity="0.6">${nodes.join('')}</g>`;
 }
 
 function buildLightSvg(certificate, qrDataUrl) {
@@ -173,23 +167,27 @@ function buildLightSvg(certificate, qrDataUrl) {
     <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a2fc2"/><stop offset="1" stop-color="#1fa8f2"/></linearGradient>
   </defs>
   <rect width="1600" height="900" fill="#ffffff"/>
-  <rect x="20" y="20" width="1560" height="860" rx="14" fill="none" stroke="url(#frameGradient)" stroke-width="6"/>
-  <rect x="34" y="34" width="1532" height="832" rx="8" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
-  ${circuitFan(1560, 50, -1, 1, '#b9c3ea')}
-  ${circuitFan(40, 850, 1, -1, '#b9c3ea')}
-  ${badgeGroup({ cx: 800, cy: 110, size: 100, plate: false, logo })}
-  <text x="800" y="210" text-anchor="middle" fill="url(#titleGrad)" font-family="${bodyStack}" font-size="34" font-weight="800" letter-spacing="2">${escapeXml(f.title)}</text>
-  <text x="800" y="260" text-anchor="middle" fill="#64748b" font-family="${bodyStack}" font-size="18">${escapeXml(f.awardedTo)}</text>
-  <text x="800" y="335" text-anchor="middle" fill="#0f172a" font-family="${bodyStack}" font-size="44" font-weight="700">${escapeXml(certificate.studentName)}</text>
-  <line x1="550" y1="375" x2="1050" y2="375" stroke="#cbd5e1" stroke-width="2"/>
-  <text x="800" y="425" text-anchor="middle" fill="#475569" font-family="${bodyStack}" font-size="19">${escapeXml(f.statement)}</text>
-  <text x="800" y="480" text-anchor="middle" fill="#1e293b" font-family="${bodyStack}" font-size="28" font-weight="700">${escapeXml(certificate.courseName)}</text>
-  <text x="800" y="555" text-anchor="middle" fill="#64748b" font-family="${bodyStack}" font-size="16">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
-  <g transform="translate(70, 705)">
-    <rect x="0" y="0" width="115" height="115" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-    <image x="7" y="7" width="101" height="101" href="${qrDataUrl}"/>
-    <text x="130" y="50" fill="#334155" font-family="${bodyStack}" font-size="13" font-weight="700">${escapeXml(f.qrLabel)}</text>
-    <text x="130" y="75" fill="#64748b" font-family="${bodyStack}" font-size="12">${escapeXml(f.codeLabel)} ${escapeXml(certificate.certificateCode)}</text>
+  <rect x="30" y="30" width="1540" height="840" rx="12" fill="none" stroke="url(#frameGradient)" stroke-width="5"/>
+  <rect x="44" y="44" width="1512" height="812" rx="8" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+  ${circuitFan(1530, 70, -1, 1, '#b9c3ea')}
+  ${circuitFan(70, 830, 1, -1, '#b9c3ea')}
+  
+  <circle cx="800" cy="115" r="45" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <image x="760" y="75" width="80" height="80" href="${logo}" preserveAspectRatio="xMidYMid meet"/>
+
+  <text x="800" y="195" text-anchor="middle" fill="url(#titleGrad)" font-family="${bodyStack}" font-size="30" font-weight="800" letter-spacing="2">${escapeXml(f.title)}</text>
+  <text x="800" y="240" text-anchor="middle" fill="#64748b" font-family="${bodyStack}" font-size="17">${escapeXml(f.awardedTo)}</text>
+  <text x="800" y="310" text-anchor="middle" fill="#0f172a" font-family="${bodyStack}" font-size="40" font-weight="700">${escapeXml(certificate.studentName)}</text>
+  <line x1="550" y1="345" x2="1050" y2="345" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="800" y="390" text-anchor="middle" fill="#475569" font-family="${bodyStack}" font-size="18">${escapeXml(f.statement)}</text>
+  <text x="800" y="445" text-anchor="middle" fill="#1e293b" font-family="${bodyStack}" font-size="26" font-weight="700">${escapeXml(certificate.courseName)}</text>
+  <text x="800" y="510" text-anchor="middle" fill="#64748b" font-family="${bodyStack}" font-size="15">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
+  
+  <g transform="translate(100, 690)">
+    <rect x="0" y="0" width="100" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <image x="6" y="6" width="88" height="88" href="${qrDataUrl}"/>
+    <text x="115" y="45" fill="#334155" font-family="${bodyStack}" font-size="12" font-weight="700">${escapeXml(f.qrLabel)}</text>
+    <text x="115" y="68" fill="#64748b" font-family="${bodyStack}" font-size="11">${escapeXml(f.codeLabel)} ${escapeXml(certificate.certificateCode)}</text>
   </g>
 </svg>`;
 }
@@ -207,32 +205,37 @@ function buildDarkSvg(certificate, qrDataUrl) {
   <defs>
     <linearGradient id="neonFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#5b6bff"/></linearGradient>
     <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     ${dots}
   </defs>
   <rect width="1600" height="900" fill="#050914"/>
   <rect width="1600" height="900" fill="url(#dotGrid)"/>
-  ${circuitFan(1560, 50, -1, 1, '#3fd2ff')}
-  ${circuitFan(1560, 850, -1, -1, '#3fd2ff')}
-  ${circuitFan(40, 50, 1, 1, '#3fd2ff')}
-  ${circuitFan(40, 850, 1, -1, '#3fd2ff')}
-  <rect x="20" y="20" width="1560" height="860" rx="14" fill="none" stroke="url(#neonFrame)" stroke-width="4" filter="url(#glow)"/>
-  <rect x="34" y="34" width="1532" height="832" rx="8" fill="none" stroke="#123044" stroke-width="1.5"/>
-  ${badgeGroup({ cx: 800, cy: 110, size: 100, plate: true, logo })}
-  <text x="800" y="210" text-anchor="middle" fill="#00e5ff" font-family="${bodyStack}" font-size="34" font-weight="800" letter-spacing="3" filter="url(#glow)">${escapeXml(f.title)}</text>
-  <text x="800" y="260" text-anchor="middle" fill="#94a3b8" font-family="${bodyStack}" font-size="18">${escapeXml(f.awardedTo)}</text>
-  <text x="800" y="335" text-anchor="middle" fill="#ffffff" font-family="${bodyStack}" font-size="44" font-weight="700">${escapeXml(certificate.studentName)}</text>
-  <line x1="550" y1="375" x2="1050" y2="375" stroke="#1e3a8a" stroke-width="2"/>
-  <text x="800" y="425" text-anchor="middle" fill="#cbd5e1" font-family="${bodyStack}" font-size="19">${escapeXml(f.statement)}</text>
-  <text x="800" y="480" text-anchor="middle" fill="#38bdf8" font-family="${bodyStack}" font-size="28" font-weight="700" filter="url(#glow)">${escapeXml(certificate.courseName)}</text>
-  <text x="800" y="555" text-anchor="middle" fill="#94a3b8" font-family="${bodyStack}" font-size="16">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
-  <g transform="translate(70, 705)">
-    <rect x="0" y="0" width="115" height="115" rx="6" fill="#ffffff" stroke="#00e5ff" stroke-width="2"/>
-    <image x="7" y="7" width="101" height="101" href="${qrDataUrl}"/>
-    <text x="130" y="50" fill="#38bdf8" font-family="${bodyStack}" font-size="13" font-weight="700">${escapeXml(f.qrLabel)}</text>
-    <text x="130" y="75" fill="#94a3b8" font-family="${bodyStack}" font-size="12">${escapeXml(f.codeLabel)} ${escapeXml(certificate.certificateCode)}</text>
+  ${circuitFan(1530, 70, -1, 1, '#3fd2ff')}
+  ${circuitFan(1530, 830, -1, -1, '#3fd2ff')}
+  ${circuitFan(70, 70, 1, 1, '#3fd2ff')}
+  ${circuitFan(70, 830, 1, -1, '#3fd2ff')}
+  
+  <rect x="30" y="30" width="1540" height="840" rx="12" fill="none" stroke="url(#neonFrame)" stroke-width="3.5" filter="url(#glow)"/>
+  <rect x="44" y="44" width="1512" height="812" rx="8" fill="none" stroke="#123044" stroke-width="1.5"/>
+  
+  <circle cx="800" cy="115" r="45" fill="#0d1b2a" stroke="#00e5ff" stroke-width="2" filter="url(#glow)"/>
+  <image x="760" y="75" width="80" height="80" href="${logo}" preserveAspectRatio="xMidYMid meet"/>
+
+  <text x="800" y="195" text-anchor="middle" fill="#00e5ff" font-family="${bodyStack}" font-size="30" font-weight="800" letter-spacing="2" filter="url(#glow)">${escapeXml(f.title)}</text>
+  <text x="800" y="240" text-anchor="middle" fill="#94a3b8" font-family="${bodyStack}" font-size="17">${escapeXml(f.awardedTo)}</text>
+  <text x="800" y="310" text-anchor="middle" fill="#ffffff" font-family="${bodyStack}" font-size="40" font-weight="700">${escapeXml(certificate.studentName)}</text>
+  <line x1="550" y1="345" x2="1050" y2="345" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="800" y="390" text-anchor="middle" fill="#cbd5e1" font-family="${bodyStack}" font-size="18">${escapeXml(f.statement)}</text>
+  <text x="800" y="445" text-anchor="middle" fill="#38bdf8" font-family="${bodyStack}" font-size="26" font-weight="700" filter="url(#glow)">${escapeXml(certificate.courseName)}</text>
+  <text x="800" y="510" text-anchor="middle" fill="#94a3b8" font-family="${bodyStack}" font-size="15">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
+  
+  <g transform="translate(100, 690)">
+    <rect x="0" y="0" width="100" height="100" rx="6" fill="#ffffff" stroke="#00e5ff" stroke-width="2"/>
+    <image x="6" y="6" width="88" height="88" href="${qrDataUrl}"/>
+    <text x="115" y="45" fill="#38bdf8" font-family="${bodyStack}" font-size="12" font-weight="700">${escapeXml(f.qrLabel)}</text>
+    <text x="115" y="68" fill="#94a3b8" font-family="${bodyStack}" font-size="11">${escapeXml(f.codeLabel)} ${escapeXml(certificate.certificateCode)}</text>
   </g>
 </svg>`;
 }
@@ -241,7 +244,7 @@ async function renderCertificateSvg(certificate) {
   const qrDataUrl = await QRCode.toDataURL(certificate.verificationUrl, {
     errorCorrectionLevel: 'M',
     margin: 1,
-    width: 320,
+    width: 280,
   });
   return normalizeTheme(certificate.theme) === 'dark'
     ? buildDarkSvg(certificate, qrDataUrl)
@@ -263,7 +266,7 @@ async function sendCertificateEmail({ certificate, recipientEmail }) {
   const courseName = escapeHtml(certificate.courseName);
   const verificationLink = escapeHtml(certificate.verificationUrl);
   return sendEmail({
-    to: recipientElement || recipientEmail,
+    to: recipientEmail,
     subject: `شهادة إتمام الدورة — ${certificate.courseName}`,
     html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.8;color:#17233b"><h2>مبروك يا ${studentName}</h2><p>لقد أتممت متطلبات دورة <strong>${courseName}</strong> بنجاح.</p><p>أرفقنا شهادتك بصيغة صورة متجهية عالية الجودة، ويمكنك حفظها أو طباعتها بأي دقة.</p><p>رمز الشهادة: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><p><a href="${verificationLink}">فتح صفحة التحقق من الشهادة</a></p><p style="color:#617384;font-size:12px">هذه رسالة آلية من نادي الأمن السيبراني بالجامعة العربية المفتوحة.</p></div>`,
     attachments: [attachment],
