@@ -73,13 +73,13 @@ async function loadProfile(isRetry) {
           return loadProfile(true);
         } catch (_) { /* refresh token also invalid/expired — fall through to real redirect */ }
       }
-      if (document.body.classList.contains('profile-page')) window.location.replace('index.html?auth=required&return=profile.html');
+      if (document.body.classList.contains('profile-page')) window.location.replace('/index.html?auth=required&return=profile.html');
       else setMessage(error.message, 'error');
     }
   }
   async function updateProfile(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; try { const data = await request(`${AUTH_URL}/profile`, { method: 'PATCH', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); fillUser(data.user); setMessage('تم تحديث بيانات ملفك بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } }
   async function changePassword(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; const button = form.querySelector('button[type="submit"]'); try { button.disabled = true; await request(`${AUTH_URL}/change-password`, { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); form.reset(); setMessage('تم تغيير كلمة المرور بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } finally { button.disabled = false; } }
-  async function logout() { try { await request(`${AUTH_URL}/logout`, { method: 'POST' }); window.location.replace('index.html'); } catch (error) { setMessage(error.message, 'error'); } }
+  async function logout() { try { await request(`${AUTH_URL}/logout`, { method: 'POST' }); window.location.replace('/index.html'); } catch (error) { setMessage(error.message, 'error'); } }
   document.addEventListener('auth:ready', (event) => { fillUser(event.detail?.user); loadProfile(); });
   document.addEventListener('DOMContentLoaded', () => {
     $('#profile-form')?.addEventListener('submit', updateProfile);
