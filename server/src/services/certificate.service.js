@@ -11,9 +11,6 @@ function normalizeTheme(theme) {
   return VALID_THEMES.includes(theme) ? theme : 'light';
 }
 
-// The club logo ships as a flat white-background PNG (assets/branding/cyberclub-logo.png).
-// It's read once and cached as a data URI so both certificate themes can embed the
-// real club badge instead of a redrawn approximation.
 let cachedLogoDataUrl = null;
 function logoDataUrl() {
   if (cachedLogoDataUrl) return cachedLogoDataUrl;
@@ -106,8 +103,6 @@ async function issueCertificate({ studentId, courseSlug, courseName, studentName
     return { certificate: publicCertificate(insertedResult.rows[0]), created: true };
   }
 
-  // A second request completed at the same time. Reuse the one certificate
-  // that won the unique constraint instead of issuing or emailing a duplicate.
   const concurrentResult = await pool.query(
     `SELECT course_slug, course_name, student_name, language, theme, certificate_code, issued_at
        FROM student_course_certificates
@@ -127,43 +122,8 @@ async function findByCode(certificateCode) {
   return rows[0] ? publicCertificate(rows[0]) : null;
 }
 
-// -- SVG rendering ----------------------------------------------------------
-//
-// Two visual identities are supported, styled after the club's reference
-// artwork:
-//  - "light": white background, purple-to-blue gradient frame and circuit
-//    traces in the corners, the real club badge, a formal serif title.
-//  - "dark": near-black background, dense cyan/blue neon circuit traces
-//    along both edges, the club badge on a white plate, bold sans title.
-//
-// Both share the same dynamic fields (name, course, date, certificate code,
-// QR code) and the same 1600x900 canvas so downstream consumers (email
-// attachment, download, public image route) don't need to know which theme
-// was chosen.
+// -- SVG rendering (Frame Only / بدون نصوص داخلية) --------------------------
 
-function commonFields(certificate) {
-  const issueDate = new Date(certificate.issuedAt).toLocaleDateString(
-    certificate.language === 'en' ? 'en-GB' : 'ar-SA'
-  );
-  const isEn = certificate.language === 'en';
-  return {
-    issueDate,
-    isEn,
-    documentDirection: isEn ? 'ltr' : 'rtl',
-    title: isEn ? 'Certificate of Completion' : 'شهادة إتمام',
-    awardedTo: isEn ? 'This certificate is awarded to' : 'تشهد هذه الوثيقة بأن',
-    statement: isEn
-      ? `has successfully completed the course`
-      : `قد أتمّ/ـت بنجاح الدورة التدريبية المقدّمة من نادي الأمن السيبراني بالجامعة العربية المفتوحة بعنوان`,
-    awardedDay: isEn ? 'Issued on' : 'صدرت بتاريخ',
-    codeLabel: isEn ? 'Certificate ID' : 'رمز الشهادة',
-    qrLabel: isEn ? 'Scan to verify this certificate' : 'امسح الرمز للتحقق من الشهادة',
-    orgLine: isEn ? 'AOU CYBER SECURITY CLUB' : 'نادي الأمن السيبراني — الجامعة العربية المفتوحة',
-  };
-}
-
-// A small fan of orthogonal "circuit" traces with node dots, anchored at a
-// corner. dx/dy flip the fan to the correct corner of the 1600x900 canvas.
 function circuitFan(x, y, dx, dy, color) {
   const seg = 46;
   const lines = [];
@@ -187,17 +147,11 @@ function badgeGroup({ cx, cy, size, plate, logo }) {
 }
 
 function buildLightSvg(certificate, qrDataUrl) {
-  const f = commonFields(certificate);
-  const fontStack = "Noto Naskh Arabic, Noto Sans Arabic, Georgia, 'Times New Roman', serif";
-  const bodyStack = 'Noto Naskh Arabic, Noto Sans Arabic, Arial, Tahoma, sans-serif';
   const logo = logoDataUrl();
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="certificate-title certificate-description" lang="${certificate.language}" direction="${f.documentDirection}">
-  <title id="certificate-title">${escapeXml(f.title)}</title>
-  <desc id="certificate-description">${escapeXml(`${certificate.studentName} - ${certificate.courseName} - ${certificate.certificateCode}`)}</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" lang="${certificate.language}">
   <defs>
     <linearGradient id="frameGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7b3fe4"/><stop offset="1" stop-color="#1fa8f2"/></linearGradient>
-    <linearGradient id="titleGradient" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a2fc2"/><stop offset="1" stop-color="#1fa8f2"/></linearGradient>
   </defs>
   <rect width="1600" height="900" fill="#ffffff"/>
   <rect x="10" y="10" width="1580" height="880" rx="18" fill="none" stroke="url(#frameGradient)" stroke-width="10"/>
@@ -205,34 +159,17 @@ function buildLightSvg(certificate, qrDataUrl) {
   ${circuitFan(1580, 40, -1, 1, '#b9c3ea')}
   ${circuitFan(20, 860, 1, -1, '#b9c3ea')}
   ${badgeGroup({ cx: 800, cy: 118, size: 150, plate: false, logo })}
-  <text x="800" y="258" text-anchor="middle" fill="url(#titleGradient)" font-family="${fontStack}" font-size="54" font-weight="700" letter-spacing="2" direction="${f.documentDirection}">${escapeXml(f.title)}</text>
-  <text x="800" y="308" text-anchor="middle" fill="#26313f" font-family="${bodyStack}" font-size="24" direction="${f.documentDirection}">${escapeXml(f.awardedTo)}</text>
-  <text x="800" y="388" text-anchor="middle" fill="#101820" font-family="${bodyStack}" font-size="52" font-weight="700" direction="${f.documentDirection}">${escapeXml(certificate.studentName)}</text>
-  <path d="M520 415h560" stroke="#5a2fc2" stroke-width="2" opacity="0.5"/>
-  <text x="800" y="464" text-anchor="middle" fill="#4a5568" font-family="${bodyStack}" font-size="22" direction="${f.documentDirection}">${escapeXml(f.statement)}</text>
-  <text x="800" y="504" text-anchor="middle" fill="#101820" font-family="${bodyStack}" font-size="32" font-weight="700" direction="${f.documentDirection}">${escapeXml(certificate.courseName)}</text>
-  <text x="800" y="562" text-anchor="middle" fill="#4a5568" font-family="${bodyStack}" font-size="21" direction="${f.documentDirection}">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
-  <text x="120" y="820" fill="#4a5568" font-family="${bodyStack}" font-size="18" direction="${f.documentDirection}">${escapeXml(f.codeLabel)}</text>
-  <text x="120" y="850" fill="#101820" font-family="Arial, Tahoma, sans-serif" font-size="21" font-weight="700">${escapeXml(certificate.certificateCode)}</text>
-  <rect x="1330" y="686" width="180" height="180" rx="10" fill="#ffffff" stroke="#dfe3ea" stroke-width="3"/>
-  <image x="1340" y="696" width="160" height="160" href="${qrDataUrl}"/>
-  <text x="1420" y="884" text-anchor="middle" fill="#4a5568" font-family="${bodyStack}" font-size="15" direction="${f.documentDirection}">${escapeXml(f.qrLabel)}</text>
 </svg>`;
 }
 
 function buildDarkSvg(certificate, qrDataUrl) {
-  const f = commonFields(certificate);
-  const fontStack = 'Noto Naskh Arabic, Noto Sans Arabic, Arial, Tahoma, sans-serif';
-  const monoStack = "'Courier New', Consolas, monospace";
   const logo = logoDataUrl();
   const dots = `
     <pattern id="dotGrid" width="26" height="26" patternUnits="userSpaceOnUse">
       <circle cx="1" cy="1" r="1" fill="#123044"/>
     </pattern>`;
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="certificate-title certificate-description" lang="${certificate.language}" direction="${f.documentDirection}">
-  <title id="certificate-title">${escapeXml(f.title)}</title>
-  <desc id="certificate-description">${escapeXml(`${certificate.studentName} - ${certificate.courseName} - ${certificate.certificateCode}`)}</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" lang="${certificate.language}">
   <defs>
     <linearGradient id="neonFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#5b6bff"/></linearGradient>
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
@@ -250,15 +187,6 @@ function buildDarkSvg(certificate, qrDataUrl) {
   <rect x="12" y="12" width="1576" height="876" rx="16" fill="none" stroke="url(#neonFrame)" stroke-width="4" filter="url(#glow)"/>
   <rect x="30" y="30" width="1540" height="840" rx="10" fill="none" stroke="#123044" stroke-width="2"/>
   ${badgeGroup({ cx: 800, cy: 118, size: 150, plate: true, logo })}
-  <text x="800" y="256" text-anchor="middle" fill="#ffffff" font-family="${fontStack}" font-size="46" font-weight="700" letter-spacing="3" direction="${f.documentDirection}" filter="url(#glow)">${escapeXml(f.title.toUpperCase())}</text>
-  <text x="800" y="332" text-anchor="middle" fill="#ffffff" font-family="${fontStack}" font-size="52" font-weight="700" direction="${f.documentDirection}">${escapeXml(certificate.studentName)}</text>
-  <text x="800" y="404" text-anchor="middle" fill="#b9c9d6" font-family="${fontStack}" font-size="22" direction="${f.documentDirection}">${escapeXml(f.statement)}</text>
-  <text x="800" y="446" text-anchor="middle" fill="#3fd2ff" font-family="${fontStack}" font-size="30" font-weight="700" direction="${f.documentDirection}" filter="url(#glow)">${escapeXml(certificate.courseName)}</text>
-  <text x="800" y="504" text-anchor="middle" fill="#b9c9d6" font-family="${fontStack}" font-size="21" direction="${f.documentDirection}">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
-  <text x="800" y="540" text-anchor="middle" fill="#7d93a3" font-family="${monoStack}" font-size="18">${escapeXml(f.codeLabel)}: ${escapeXml(certificate.certificateCode)}</text>
-  <text x="120" y="700" fill="#3fd2ff" font-family="${fontStack}" font-size="17" font-weight="700" direction="${f.documentDirection}">${escapeXml(f.qrLabel).toUpperCase()}</text>
-  <rect x="120" y="716" width="180" height="180" rx="8" fill="#ffffff" stroke="#3fd2ff" stroke-width="3"/>
-  <image x="130" y="726" width="160" height="160" href="${qrDataUrl}"/>
 </svg>`;
 }
 
