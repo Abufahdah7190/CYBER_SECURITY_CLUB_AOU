@@ -190,24 +190,37 @@
 
   function buildQuiz(courseSlug, moduleIndex, lessonIndex, topic, topicEn) {
     const bank = knowledgeBanks[courseSlug] || knowledgeBanks['cyber-basics'];
-    const lessonSeed = moduleIndex * 3 + lessonIndex; // 0..8, unique per lesson within a course
-    const arQuestions = [];
-    const enQuestions = [];
-    for (let q = 0; q < 5; q += 1) {
-      const correctItem = bank.correct[(lessonSeed + q) % bank.correct.length];
-      const wrongItems = pick(bank.wrong, (lessonSeed * 2 + q), 2);
-      const correctPosition = (lessonSeed + q) % 3; // rotates so the answer isn't always first
-      const arOptions = [wrongItems[0].ar, wrongItems[1].ar];
-      const enOptions = [wrongItems[0].en, wrongItems[1].en];
-      arOptions.splice(correctPosition, 0, correctItem.ar);
-      enOptions.splice(correctPosition, 0, correctItem.en);
-      arQuestions.push({ question: arStems[q](topic), options: arOptions, correct: correctPosition });
-      enQuestions.push({ question: enStems[q](topicEn), options: enOptions, correct: correctPosition });
-    }
-    return {
-      ar: { questions: arQuestions },
-      en: { questions: enQuestions },
-    };
+    const lessonSeed = moduleIndex * 3 + lessonIndex;
+    const correct = bank.correct[lessonSeed % bank.correct.length];
+    const wrong = bank.wrong[lessonSeed % bank.wrong.length];
+    const secondWrong = bank.wrong[(lessonSeed + 2) % bank.wrong.length];
+    const stepsAr = [
+      `حدد النطاق والهدف من ${topic}.`,
+      `اجمع المعلومات ذات الصلة وسجّل مصدر كل معلومة.`,
+      `طبّق الإجراء الآمن: ${correct.ar}.`,
+      'راجع النتيجة ووثّقها قبل الإغلاق.',
+    ];
+    const stepsEn = [
+      `Define the scope and objective of ${topicEn}.`,
+      'Collect relevant information and record each source.',
+      `Apply the safe practice: ${correct.en}.`,
+      'Review and document the result before closing the task.',
+    ];
+    const arQuestions = [
+      (() => { const options = [wrong.ar, correct.ar, secondWrong.ar]; return { type: 'mcq', question: arStems[0](topic), options, correct: 1 }; })(),
+      { type: 'true-false', question: `صح أم خطأ: ${correct.ar}.`, options: ['صح', 'خطأ'], correct: 0 },
+      { type: 'matching', question: `اربط الممارسة بالنتيجة الصحيحة في «${topic}».`, pairs: [{ left: 'الممارسة الآمنة', right: correct.ar }, { left: 'الممارسة الخاطئة', right: wrong.ar }], correct: [0, 1] },
+      { type: 'ordering', question: `رتّب خطوات تنفيذ «${topic}» ترتيباً صحيحاً.`, items: stepsAr, correct: [0, 1, 2, 3] },
+      { type: 'mcq', question: arStems[4](topic), options: [secondWrong.ar, correct.ar, wrong.ar], correct: 1 },
+    ];
+    const enQuestions = [
+      (() => { const options = [wrong.en, correct.en, secondWrong.en]; return { type: 'mcq', question: enStems[0](topicEn), options, correct: 1 }; })(),
+      { type: 'true-false', question: `True or false: ${correct.en}.`, options: ['True', 'False'], correct: 0 },
+      { type: 'matching', question: `Match each practice to the correct outcome for "${topicEn}".`, pairs: [{ left: 'Safe practice', right: correct.en }, { left: 'Unsafe practice', right: wrong.en }], correct: [0, 1] },
+      { type: 'ordering', question: `Put the steps for "${topicEn}" in the correct order.`, items: stepsEn, correct: [0, 1, 2, 3] },
+      { type: 'mcq', question: enStems[4](topicEn), options: [secondWrong.en, correct.en, wrong.en], correct: 1 },
+    ];
+    return { ar: { questions: arQuestions }, en: { questions: enQuestions } };
   }
 
   function buildLesson(course, moduleName, moduleIndex, lessonIndex) {
@@ -230,8 +243,8 @@
       type,
       typeLabel: { ar: 'درس مقالي', en: 'Article lesson' },
       body: {
-        ar: `في هذا الدرس من دورة «${course.ar}» — ضمن وحدة «${moduleName}» — نتناول ${topic.toLowerCase()} بشكل عملي مرتبط مباشرة بمهارات هذه الدورة تحديدًا. من أبرز الممارسات التي سنطبقها: ${highlight1.ar}، إضافة إلى ${highlight2.ar}. في المقابل، يُعد ${pitfall.ar} من الأخطاء الشائعة التي يجب تجنبها في هذا السياق. اقرأ الشرح، اربطه بمثال واقعي من مجال «${course.ar}»، ثم أجب عن اختبار الوحدة القصير أدناه.`,
-        en: `In this lesson of ${course.en} — within the "${moduleNameEn}" module — we cover ${topicEn.toLowerCase()} in a way that is directly tied to this course's own skill set. Key practices covered here include: ${highlight1.en}, as well as ${highlight2.en}. By contrast, ${pitfall.en} is a common mistake to avoid in this exact context. Read the explanation, connect it to a real ${course.en} scenario, then take the short quiz below.`,
+        ar: `في هذا الدرس من دورة «${course.ar}»، ننتقل من التعريف النظري إلى ممارسة قابلة للتطبيق حول ${topic.toLowerCase()}. يبدأ التحليل بتحديد الأصول والبيانات والأطراف المعنية، ثم تقدير أثر الخطر واحتمال وقوعه قبل اختيار الضوابط المناسبة. سنطبّق مثالاً واقعياً يتطلب ${highlight1.ar} و${highlight2.ar}، مع توثيق القرار والافتراضات حتى يستطيع شخص آخر مراجعته. ومن الأخطاء الشائعة ${pitfall.ar}؛ لذلك يجب اختبار الإجراء في نطاق مصرح به، وقياس النتيجة، وتسجيل ما يحتاج إلى تحسين قبل الانتقال إلى المرحلة التالية.`,
+        en: `In this ${course.en} lesson, we move from theory to a practical workflow for ${topicEn.toLowerCase()}. Start by identifying the assets, data, and stakeholders involved, then estimate impact and likelihood before selecting controls. The worked scenario applies ${highlight1.en} and ${highlight2.en}, while documenting assumptions so another analyst can review the decision. A common failure is ${pitfall.en}; keep the activity authorized, validate the outcome, and record improvements before moving to the next stage.`,
       },
       steps: {
         ar: [`حدد كيف يرتبط "${highlight1.ar}" بالهدف العملي لهذا الدرس.`, `قارن بين الممارسة الصحيحة والخطأ الشائع: ${pitfall.ar}.`, 'وثّق ملاحظتك ثم انتقل إلى اختبار الوحدة.'],

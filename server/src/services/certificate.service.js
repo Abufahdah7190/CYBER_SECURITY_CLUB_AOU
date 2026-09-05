@@ -18,7 +18,12 @@ let cachedLogoDataUrl = null;
 function logoDataUrl() {
   if (cachedLogoDataUrl) return cachedLogoDataUrl;
   try {
-    const logoPath = path.join(__dirname, '..', '..', 'public', 'assets', 'branding', 'cyberclub-logo.png');
+    const candidates = [
+      path.join(__dirname, '..', '..', 'public', 'assets', 'branding', 'cyberclub-logo.png'),
+      path.join(__dirname, '..', '..', '..', 'assets', 'branding', 'cyberclub-logo.png'),
+    ];
+    const logoPath = candidates.find((candidate) => fs.existsSync(candidate));
+    if (!logoPath) throw new Error('cyberclub-logo.png not found');
     const buffer = fs.readFileSync(logoPath);
     cachedLogoDataUrl = `data:image/png;base64,${buffer.toString('base64')}`;
   } catch (error) {

@@ -2346,3 +2346,29 @@ body.auth-locked #tab-auth {
 .provider-heading h3 { margin: 0; }
 .provider-heading p { margin: 4px 0 0; }
 .course-meta { display: flex; flex-wrap: wrap; gap: 10px 16px; line-height: 1.6; }
+
+/* LMS question types: matching and ordered-step controls */
+.lms-match-row,
+.lms-order-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.9fr);
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.65rem 0;
+}
+.lms-match-row select,
+.lms-order-row select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--glass-border, #d7dce5);
+  border-radius: 0.65rem;
+  background: var(--panel, #fff);
+  color: inherit;
+}
+.lms-order-row {
+  grid-template-columns: minmax(0, 1fr) 5rem;
+}
+@media (max-width: 640px) {
+  .lms-match-row { grid-template-columns: 1fr; gap: 0.35rem; }
+}

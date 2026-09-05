@@ -86,17 +86,34 @@ app.get('/learn/:courseId', sendLmsPage);
 const sendStudentProfile = (req, res) => res.sendFile(path.join(FRONTEND_ROOT, 'profile.html'));
 app.get('/student/profile', sendStudentProfile);
 
-// Serve the existing static frontend completely untouched — same files,
-// same paths (index.html, css/style.css, js/*, locales/*).
-app.use(express.static(FRONTEND_ROOT, { index: 'index.html' }));
+// Serve static assets before any HTML fallback. A missing CSS/JS file must
+// never receive index.html, otherwise the browser reports a MIME error because
+// it receives text/html where a stylesheet or script was expected.
+app.use(express.static(FRONTEND_ROOT, {
+  index: 'index.html',
+  fallthrough: true,
+  etag: true,
+  maxAge: env.isProd ? '1h' : 0,
+}));
+
+// Never rewrite asset-like URLs to the SPA shell. Return a real 404 so a
+// deployment error is visible immediately instead of being cached as HTML.
+app.use((req, res, next) => {
+  const looksLikeAsset = /\.[a-z0-9]{1,12}$/i.test(req.path);
+  if (req.method === 'GET' && looksLikeAsset && !req.path.startsWith('/api/')) {
+    return res.status(404).type('text/plain').send('Static asset not found');
+  }
+  return next();
+});
 
 app.use('/api', notFoundHandler);
 
-// Frontend catch-all: browser navigation such as /learn/... must receive an
-// HTML shell instead of Express returning Cannot GET. API routes are already
-// handled above and are therefore not swallowed by this fallback.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(FRONTEND_ROOT, 'index.html'));
+// Frontend catch-all is reserved for browser document navigations only.
+app.get('*', (req, res, next) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api/')) return next();
+  const acceptsHtml = (req.headers.accept || '').includes('text/html');
+  if (!acceptsHtml) return res.status(404).type('text/plain').send('Not found');
+  return res.sendFile(path.join(FRONTEND_ROOT, 'index.html'));
 });
 
 app.use(errorHandler);

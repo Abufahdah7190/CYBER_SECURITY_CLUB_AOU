@@ -124,9 +124,34 @@
   function quizQuestions(lesson) {
     const quiz = lesson.quiz?.[lang] || lesson.quiz?.ar || {};
     if (Array.isArray(quiz.questions) && quiz.questions.length) return quiz.questions;
-    if (quiz.question) return [quiz];
+    if (quiz.question) return [{ ...quiz, type: quiz.type || 'mcq' }];
     if (Array.isArray(lesson.questions) && lesson.questions.length) return lesson.questions;
     return [];
+  }
+  function renderQuestion(question, questionIndex, done) {
+    const type = question.type || 'mcq';
+    const disabled = done ? 'disabled' : '';
+    if (type === 'matching') {
+      return `<fieldset class="lms-quiz-question lms-quiz-matching"><legend>${questionIndex + 1}. ${question.question}</legend>${(question.pairs || []).map((pair, pairIndex) => `<label class="lms-match-row"><span>${pair.left}</span><select data-match-index="${questionIndex}" data-pair-index="${pairIndex}" ${disabled}><option value="">${lang === 'ar' ? 'اختر المطابقة' : 'Choose a match'}</option>${(question.pairs || []).map((option, optionIndex) => `<option value="${optionIndex}">${option.right}</option>`).join('')}</select></label>`).join('')}</fieldset>`;
+    }
+    if (type === 'ordering') {
+      const count = (question.items || []).length;
+      return `<fieldset class="lms-quiz-question lms-quiz-ordering"><legend>${questionIndex + 1}. ${question.question}</legend>${(question.items || []).map((item, itemIndex) => `<label class="lms-order-row"><span>${item}</span><select data-order-index="${questionIndex}" data-item-index="${itemIndex}" ${disabled}>${Array.from({ length: count }, (_, position) => `<option value="${position}">${position + 1}</option>`).join('')}</select></label>`).join('')}</fieldset>`;
+    }
+    return `<fieldset class="lms-quiz-question"><legend>${questionIndex + 1}. ${question.question}</legend>${(question.options || []).map((option, optionIndex) => `<label><input type="radio" name="lms-quiz-${questionIndex}" value="${optionIndex}" ${disabled}> ${option}</label>`).join('')}</fieldset>`;
+  }
+  function answerIsCorrect(question, questionIndex) {
+    const type = question.type || 'mcq';
+    if (type === 'matching') {
+      const answers = [...document.querySelectorAll(`[data-match-index="${questionIndex}"]`)].map((select) => Number(select.value));
+      return answers.length === (question.correct || []).length && answers.every((value, index) => value === question.correct[index]);
+    }
+    if (type === 'ordering') {
+      const answers = [...document.querySelectorAll(`[data-order-index="${questionIndex}"]`)].map((select) => Number(select.value));
+      return answers.length === (question.correct || []).length && answers.every((value, index) => value === question.correct[index]);
+    }
+    const answer = document.querySelector(`input[name="lms-quiz-${questionIndex}"]:checked`);
+    return Boolean(answer) && Number(answer.value) === Number(question.correct);
   }
   function renderLesson() {
     const item = flat()[current];
@@ -143,7 +168,7 @@
     const steps = lesson.steps?.[lang] || lesson.steps?.ar || [];
     const media = `<div class="lms-article-placeholder"><strong>${lang === 'ar' ? 'درس مقالي' : 'Article lesson'}</strong><small>${lang === 'ar' ? 'اقرأ المحتوى التالي ثم أجب عن أسئلة الاختبار.' : 'Read the lesson content below, then answer the five-question quiz.'}</small></div>`;
     $('lesson-breadcrumb').textContent = `${text(item.module.title)} / ${text(lesson.title)}`;
-    const quizHtml = questions.length ? questions.map((question, questionIndex) => `<fieldset class="lms-quiz-question"><legend>${questionIndex + 1}. ${question.question}</legend>${(question.options || []).map((option, optionIndex) => `<label><input type="radio" name="lms-quiz-${questionIndex}" value="${optionIndex}" ${done ? 'disabled' : ''}> ${option}</label>`).join('')}</fieldset>`).join('') : `<p>${lang === 'ar' ? 'لا توجد أسئلة لهذا الدرس حاليًا.' : 'No questions are currently available for this lesson.'}</p>`;
+    const quizHtml = questions.length ? questions.map((question, questionIndex) => renderQuestion(question, questionIndex, done)).join('') : `<p>${lang === 'ar' ? 'لا توجد أسئلة لهذا الدرس حاليًا.' : 'No questions are currently available for this lesson.'}</p>`;
     content.innerHTML = `<div class="lms-lesson-kicker">${text(lesson.typeLabel)} · ${lang === 'ar' ? `الدرس ${current + 1} من ${flat().length}` : `Lesson ${current + 1} of ${flat().length}`}</div><h2>${text(lesson.title)}</h2>${media}<p class="lms-lesson-body">${text(lesson.body)}</p><div class="lms-lesson-steps"><h3>${lang === 'ar' ? 'ماذا ستطبق؟' : 'What you will practice'}</h3><ol>${steps.map((step) => `<li>${step}</li>`).join('')}</ol></div><div class="lms-quiz"><h3>${lang === 'ar' ? 'اختبار قصير' : 'Quick quiz'}</h3>${quizHtml}<span id="quiz-result">${done ? (lang === 'ar' ? 'تم اجتياز هذا الدرس.' : 'Lesson completed.') : ''}</span></div>`;
     $('previous-lesson').disabled = current === 0;
     $('complete-lesson').disabled = done;
@@ -213,12 +238,11 @@
     const item = flat()[current];
     const result = $('quiz-result');
     const questions = quizQuestions(item.lesson);
-    const answers = questions.map((question, index) => document.querySelector(`input[name="lms-quiz-${index}"]:checked`));
-    if (!questions.length || answers.some((answer) => !answer)) {
-      if (result) result.textContent = lang === 'ar' ? 'أجب عن جميع الأسئلة أولًا.' : 'Answer all questions first.';
+    if (!questions.length) {
+      if (result) result.textContent = lang === 'ar' ? 'لا توجد أسئلة لهذا الدرس حاليًا.' : 'No questions are available for this lesson.';
       return;
     }
-    const correctAnswers = answers.reduce((total, answer, index) => total + (Number(answer.value) === Number(questions[index].correct) ? 1 : 0), 0);
+    const correctAnswers = questions.reduce((total, question, index) => total + (answerIsCorrect(question, index) ? 1 : 0), 0);
     const scorePercent = Math.round((correctAnswers / questions.length) * 100);
     if (scorePercent < 80) {
       if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}%. تحتاج إلى 80% على الأقل لإكمال الدرس.` : `Your score is ${scorePercent}%. You need at least 80% to complete this lesson.`;
