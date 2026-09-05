@@ -56,27 +56,27 @@
   }
   function renderCertificates(certificates = []) { const list = $('#profile-certificates-list'); const summary = $('#profile-certificates-summary'); if (!list) return; if (summary) summary.textContent = certificates.length ? `${certificates.length} شهادة محفوظة في حسابك` : 'لم تحصل على شهادات بعد'; if (!certificates.length) { list.innerHTML = '<div class="profile-empty">لم تحصل على شهادات بعد، أكمل دوراتك الأولى لإصدار شهادتك!</div>'; return; } list.innerHTML = certificates.map((certificate) => `<article class="profile-certificate-item"><img class="profile-certificate-thumb" src="${certificateImageUrl(certificate)}" alt="معاينة شهادة ${escapeHtml(certificate.courseName)}" loading="lazy"><div class="profile-certificate-info"><h4>${escapeHtml(certificate.courseName)}</h4><p>المعرف الفريد: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><small>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')} · اللغة: ${certificate.language === 'en' ? 'English' : 'العربية'} · الثيم: ${certificate.theme === 'dark' ? 'داكن' : 'فاتح'}</small></div><div class="profile-certificate-actions"><button class="btn small" type="button" data-preview-certificate="${escapeHtml(certificate.certificateCode)}">معاينة / تحميل</button><button class="btn small ghost" type="button" data-customize-certificate="${escapeHtml(certificate.certificateCode)}">تخصيص</button><a class="btn small ghost" href="${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}" target="_blank" rel="noopener">تحقق</a></div></article>`).join(''); list.querySelectorAll('[data-preview-certificate]').forEach((button) => button.addEventListener('click', () => certificatePreview(certificates.find((item) => item.certificateCode === button.dataset.previewCertificate)))); list.querySelectorAll('[data-customize-certificate]').forEach((button) => button.addEventListener('click', () => { const certificate = certificates.find((item) => item.certificateCode === button.dataset.customizeCertificate); if (certificate) openCertificateOptions(certificate); })); }
   
-async function loadProfile(isRetry) {
+  async function loadProfile(isRetry) {
     try {
       const data = await request(USER_PROFILE_URL);
       fillUser(data.user); renderStats(data.stats); renderCertificates(data.certificates);
       document.body.classList.remove('auth-locked'); setMessage('');
     } catch (error) {
-      // The access-token cookie is short-lived by design (15 minutes). A 401 here
-      // does not necessarily mean the visitor is logged out — the refresh-token
-      // cookie may still be valid. Rotate it once before treating this as a real
-      // login requirement, otherwise every ordinary token expiry bounces the
-      // student to the login page even though their session is still good.
       if (!isRetry) {
         try {
           await request(`${AUTH_URL}/refresh`, { method: 'POST', body: '{}' });
           return loadProfile(true);
-        } catch (_) { /* refresh token also invalid/expired — fall through to real redirect */ }
-      if (document.body.classList.contains('profile-page')) window.location.replace('/index.html');
-      else setMessage(error.message, 'error');
-    }
+        } catch (_) {
+          if (document.body.classList.contains('profile-page')) {
+            window.location.replace('/index.html');
+            return;
+          }
+        }
+      }
+      setMessage(error.message, 'error');
     }
   }
+
   async function updateProfile(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; try { const data = await request(`${AUTH_URL}/profile`, { method: 'PATCH', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); fillUser(data.user); setMessage('تم تحديث بيانات ملفك بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } }
   async function changePassword(event) { event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return; const button = form.querySelector('button[type="submit"]'); try { button.disabled = true; await request(`${AUTH_URL}/change-password`, { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); form.reset(); setMessage('تم تغيير كلمة المرور بنجاح.', 'success'); } catch (error) { setMessage(error.message, 'error'); } finally { button.disabled = false; } }
   async function logout() { try { await request(`${AUTH_URL}/logout`, { method: 'POST' }); window.location.replace('/index.html'); } catch (error) { setMessage(error.message, 'error'); } }

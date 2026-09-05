@@ -171,7 +171,7 @@
     $('#forgot-form').hidden = false;
     document.querySelector('.auth-switcher').hidden = true;
     setMessage('');
-    $('#forgot-email').focus();
+    $('#forgot-email')?.focus();
   }
 
   async function handleForgotPassword(event) {
@@ -191,10 +191,6 @@
     }
   }
 
-  // If another page (e.g. the profile page) bounced the visitor here because
-  // its own session check failed, honor ?return= once we confirm the session
-  // is actually valid — otherwise the visitor is silently stranded on the
-  // homepage instead of ending up back where they were headed.
   function redirectToReturnTarget() {
     const target = new URLSearchParams(window.location.search).get('return');
     if (target && /^[a-zA-Z0-9_-]+\.html$/.test(target)) {
@@ -211,7 +207,6 @@
       redirectToReturnTarget();
       return;
     } catch (error) {
-      // Try rotating the refresh token when the short-lived access token expired.
       try {
         const data = await request('/refresh', { method: 'POST', body: '{}' });
         showUser(data.user);
@@ -268,7 +263,7 @@
     const values = formData(form);
     if (values.password !== values.passwordConfirm) {
       setMessage('تأكيد كلمة المرور غير مطابق.', 'error');
-      $('#register-password-confirm').focus();
+      $('#register-password-confirm')?.focus();
       return;
     }
     delete values.passwordConfirm;
@@ -288,7 +283,7 @@
 
   async function handleLogout() {
     const button = $('#logout-button');
-    button.disabled = true;
+    if (button) button.disabled = true;
     try {
       await request('/logout', { method: 'POST', body: '{}' });
       showForms();
@@ -296,7 +291,7 @@
     } catch (error) {
       setMessage(error.message, 'error');
     } finally {
-      button.disabled = false;
+      if (button) button.disabled = false;
     }
   }
 
@@ -324,7 +319,7 @@
       });
       form.addEventListener('reset', () => emailInput.setCustomValidity(''));
     });
-    $('#logout-button').addEventListener('click', handleLogout);
+    $('#logout-button')?.addEventListener('click', handleLogout);
     $('#header-logout-button')?.addEventListener('click', handleLogout);
     $('#account-menu-trigger')?.addEventListener('click', () => {
       const panel = $('#account-menu-panel');
@@ -344,8 +339,8 @@
     document.querySelectorAll('[data-auth-view]').forEach((button) => {
       button.addEventListener('click', () => switchView(button.dataset.authView));
     });
-    document.querySelector('[data-auth-forgot-open]').addEventListener('click', showForgotForm);
-    document.querySelector('[data-auth-forgot-back]').addEventListener('click', () => {
+    document.querySelector('[data-auth-forgot-open]')?.addEventListener('click', showForgotForm);
+    document.querySelector('[data-auth-forgot-back]')?.addEventListener('click', () => {
       document.querySelector('.auth-switcher').hidden = false;
       switchView('login');
     });
