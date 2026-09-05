@@ -154,7 +154,10 @@
     const message = $('course-message');
     if (!message) return;
     if (certificate) {
-      message.innerHTML = lang === 'ar' ? `تهانينا! أتممت الدورة بنسبة 100%. صدرَت شهادتك برمز <strong>${certificate.certificateCode || ''}</strong> وسيتم إرسالها تلقائيًا إلى بريدك الجامعي. يمكنك عرضها من ملف الطالب.` : `Congratulations! You completed the course with 100%. Your certificate ID is <strong>${certificate.certificateCode || ''}</strong> and it will be emailed automatically to your university address.`;
+      const imageUrl = certificate.imageUrl || `/api/learning/certificates/${encodeURIComponent(certificate.certificateCode)}/image`;
+      const verifyUrl = certificate.verificationUrl || `/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}`;
+      const intro = lang === 'ar' ? `تهانينا! أتممت الدورة بنسبة 100%. صدرَت شهادتك برمز <strong>${certificate.certificateCode || ''}</strong> وسيتم إرسالها تلقائيًا إلى بريدك الجامعي.` : `Congratulations! You completed the course with 100%. Your certificate ID is <strong>${certificate.certificateCode || ''}</strong> and it will be emailed automatically to your university address.`;
+      message.innerHTML = `<p>${intro}</p><img class="course-certificate-preview" src="${imageUrl}" alt="${lang === 'ar' ? 'معاينة الشهادة' : 'Certificate preview'}"><p><a href="${verifyUrl}" target="_blank" rel="noopener">${lang === 'ar' ? 'فتح صفحة التحقق' : 'Open verification page'}</a> · <a href="/profile.html">${lang === 'ar' ? 'إدارة الشهادات من ملف الطالب' : 'Manage certificates from your profile'}</a></p>`;
       return;
     }
     if (!message.textContent) message.textContent = '';
@@ -169,6 +172,40 @@
     button.textContent = busy
       ? (lang === 'ar' ? 'جارٍ حفظ التقدم...' : 'Saving progress...')
       : button.dataset.originalText;
+  }
+
+  function promptCertificateOptions() {
+    return new Promise((resolve) => {
+      const isAr = lang !== 'en';
+      const modal = document.createElement('div');
+      modal.className = 'certificate-modal certificate-options-modal';
+      modal.innerHTML = `<div class="certificate-options-sheet" dir="${isAr ? 'rtl' : 'ltr'}">
+        <h3>${isAr ? 'تهانينا! اختر مواصفات شهادتك' : 'Congratulations! Choose your certificate options'}</h3>
+        <p>${isAr ? 'حدد لغة الشهادة والثيم اللوني قبل إصدارها.' : 'Pick the certificate language and color theme before it is issued.'}</p>
+        <label class="certificate-option-field">${isAr ? 'لغة الشهادة' : 'Certificate language'}
+          <select class="certificate-option-language">
+            <option value="ar" ${isAr ? 'selected' : ''}>${isAr ? 'العربية' : 'Arabic'}</option>
+            <option value="en" ${!isAr ? 'selected' : ''}>${isAr ? 'الإنجليزية' : 'English'}</option>
+          </select>
+        </label>
+        <label class="certificate-option-field">${isAr ? 'ثيم الشهادة' : 'Certificate theme'}
+          <select class="certificate-option-theme">
+            <option value="light" selected>${isAr ? 'فاتح / أبيض' : 'Light / White'}</option>
+            <option value="dark">${isAr ? 'داكن / سيبراني' : 'Dark / Cyber'}</option>
+          </select>
+        </label>
+        <div class="certificate-actions-print">
+          <button class="btn primary confirm-certificate-options" type="button">${isAr ? 'إصدار الشهادة' : 'Issue certificate'}</button>
+        </div>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.querySelector('.confirm-certificate-options').onclick = () => {
+        const language = modal.querySelector('.certificate-option-language').value;
+        const theme = modal.querySelector('.certificate-option-theme').value;
+        modal.remove();
+        resolve({ language, theme });
+      };
+    });
   }
 
   async function completeLesson() {
@@ -188,11 +225,20 @@
       return;
     }
 
+    const quizScores = { ...(saved.quizScores || {}), [current]: true };
+    const percent = Math.round(Object.values(quizScores).filter(Boolean).length / flat().length * 100);
+
+    // Completing the final lesson issues the certificate immediately, so the
+    // learner picks its language and theme first instead of getting silent
+    // defaults they'd have to reissue afterwards.
+    let certificateOptions = { language: lang, theme: 'light' };
+    if (percent >= 100) {
+      certificateOptions = await promptCertificateOptions();
+    }
+
     isCompleting = true;
     setCompletionBusy(true);
     if (result) result.textContent = lang === 'ar' ? `نتيجتك ${scorePercent}% — تم اجتياز الاختبار.` : `Score: ${scorePercent}% — Quiz passed.`;
-    const quizScores = { ...(saved.quizScores || {}), [current]: true };
-    const percent = Math.round(Object.values(quizScores).filter(Boolean).length / flat().length * 100);
 
     try {
       const response = await request(`/progress/${slug}`, {
@@ -201,7 +247,8 @@
           percent,
           lastSection: current + 1,
           quizScores,
-          language: lang,
+          language: certificateOptions.language,
+          theme: certificateOptions.theme,
           courseName: text({ ar: course.ar, en: course.en }),
         }),
       });

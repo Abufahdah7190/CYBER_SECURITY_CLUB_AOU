@@ -6,25 +6,43 @@ const { handleValidation } = require('../middleware/errors');
 const {
   studentFullName,
   issueCertificate,
+  findByCode,
+  renderCertificateSvg,
   queueCertificateEmail,
   withQrDataUrl,
 } = require('../services/certificate.service');
 
 const router = express.Router();
 const courseParam = param('courseSlug').trim().isSlug().isLength({ max: 80 });
+const certificateCodeParam = param('certificateCode').trim().isLength({ min: 5, max: 60 });
 
 // Public verification endpoint: exposes only certificate verification data.
 router.get('/verify/:certificateCode', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
       `SELECT certificate_code AS "certificateCode", course_name AS "courseName", student_name AS "studentName",
-              language, issued_at AS "issuedAt", 'valid' AS status
+              language, theme, issued_at AS "issuedAt", 'valid' AS status
        FROM student_course_certificates
        WHERE certificate_code = $1`,
       [req.params.certificateCode]
     );
     if (!rows[0]) return res.status(404).json({ valid: false, error: 'الشهادة غير موجودة أو غير صالحة' });
     return res.json({ valid: true, certificate: rows[0] });
+  } catch (error) { return next(error); }
+});
+
+// Public certificate artwork: renders the same dynamic SVG used for the
+// email attachment/download so the verification page (or anyone with the
+// certificate code) can display the real certificate image. No sensitive
+// data beyond what /verify already exposes.
+router.get('/certificates/:certificateCode/image', [certificateCodeParam], handleValidation, async (req, res, next) => {
+  try {
+    const certificate = await findByCode(req.params.certificateCode);
+    if (!certificate) return res.status(404).send('Certificate not found');
+    const svg = await renderCertificateSvg(certificate);
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(svg);
   } catch (error) { return next(error); }
 });
 
@@ -40,7 +58,7 @@ router.get('/progress', async (req, res, next) => {
       [req.user.id]
     );
     const certificates = await pool.query(
-      `SELECT course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language,
+      `SELECT course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, theme,
               certificate_code AS "certificateCode", issued_at AS "issuedAt"
        FROM student_course_certificates WHERE student_id = $1 ORDER BY issued_at DESC`,
       [req.user.id]
@@ -55,6 +73,7 @@ router.put('/progress/:courseSlug', [
   body('lastSection').optional().isInt({ min: 0, max: 30 }),
   body('quizScores').optional().isObject(),
   body('language').optional().isIn(['ar', 'en']),
+  body('theme').optional().isIn(['light', 'dark']),
   body('courseName').optional().trim().isLength({ min: 2, max: 200 }),
 ], handleValidation, async (req, res, next) => {
   try {
@@ -63,6 +82,7 @@ router.put('/progress/:courseSlug', [
     const lastSection = Number(req.body.lastSection || 0);
     const quizScores = req.body.quizScores || {};
     const language = req.body.language || 'ar';
+    const theme = req.body.theme || 'light';
     const completedAt = percent >= 80 ? new Date() : null;
     const { rows } = await pool.query(
       `INSERT INTO student_course_progress (student_id, course_slug, percent, last_section, last_accessed_at, quiz_scores, certificate_language, completed_at)
@@ -91,6 +111,7 @@ router.put('/progress/:courseSlug', [
         courseName: String(req.body.courseName || courseSlug).trim(),
         studentName: studentFullName(user),
         language,
+        theme,
       });
       certificate = issued.certificate;
 
@@ -113,6 +134,7 @@ router.post('/certificates/:courseSlug', [
   courseParam,
   body('courseName').trim().isLength({ min: 2, max: 200 }),
   body('language').isIn(['ar', 'en']),
+  body('theme').optional().isIn(['light', 'dark']),
 ], handleValidation, async (req, res, next) => {
   try {
     const progressResult = await pool.query(
@@ -131,15 +153,16 @@ router.post('/certificates/:courseSlug', [
     const user = userResult.rows[0];
     if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
 
-    // This endpoint remains available only for the optional language change
-    // from the profile page. It reuses the single certificate code and does
-    // not trigger a second email for an already-issued certificate.
+    // This endpoint is used from the profile page to (re)issue a certificate
+    // with a different language and/or theme. It reuses the single
+    // certificate code and only emails again when the certificate is new.
     const issued = await issueCertificate({
       studentId: req.user.id,
       courseSlug: req.params.courseSlug,
       courseName: req.body.courseName,
       studentName: studentFullName(user),
       language: req.body.language,
+      theme: req.body.theme || 'light',
       updateExisting: true,
     });
     if (issued.created) {
