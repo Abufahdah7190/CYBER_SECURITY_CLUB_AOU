@@ -15,12 +15,35 @@ const userRoutes = require('./routes/user.routes');
 const { generalLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
 
-const PROJECT_ROOT = path.join(__dirname, '..', '..');
-const SERVER_ROOT = path.join(__dirname, '..');
-// Support both Render layouts: repository root or Root Directory=server.
-const FRONTEND_ROOT = fs.existsSync(path.join(SERVER_ROOT, 'public', 'index.html'))
-  ? path.join(SERVER_ROOT, 'public')
-  : PROJECT_ROOT;
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+const SERVER_ROOT = path.resolve(__dirname, '..');
+
+// Resolve the frontend from the actual files that are deployed.
+// Render can run this service from either the repository root or with
+// `server` as the Root Directory, so do not assume a single layout.
+const FRONTEND_CANDIDATES = [
+  PROJECT_ROOT,
+  path.join(PROJECT_ROOT, 'public'),
+  path.join(SERVER_ROOT, 'public'),
+  SERVER_ROOT,
+];
+
+const FRONTEND_REQUIRED_FILES = [
+  'index.html',
+  'profile.html',
+  'css/style.css',
+  'js/profile.js',
+];
+
+const FRONTEND_ROOT = FRONTEND_CANDIDATES.find((candidate) =>
+  FRONTEND_REQUIRED_FILES.every((file) => fs.existsSync(path.join(candidate, file)))
+);
+
+if (!FRONTEND_ROOT) {
+  throw new Error(
+    `Frontend files not found. Checked: ${FRONTEND_CANDIDATES.join(', ')}`
+  );
+}
 
 const app = express();
 
@@ -86,15 +109,40 @@ app.get('/learn/:courseId', sendLmsPage);
 const sendStudentProfile = (req, res) => res.sendFile(path.join(FRONTEND_ROOT, 'profile.html'));
 app.get('/student/profile', sendStudentProfile);
 
-// Serve static assets before any HTML fallback. A missing CSS/JS file must
-// never receive index.html, otherwise the browser reports a MIME error because
-// it receives text/html where a stylesheet or script was expected.
+// Serve every real frontend file before the document fallback.
+// `fallthrough: true` lets unknown document routes continue to the SPA
+// fallback, while real files such as /profile.html, /css/style.css,
+// /js/profile.js and /assets/* are served directly.
 app.use(express.static(FRONTEND_ROOT, {
   index: 'index.html',
   fallthrough: true,
   etag: true,
   maxAge: env.isProd ? '1h' : 0,
 }));
+
+// Explicitly serve .html documents from the resolved frontend directory.
+// This makes direct navigation/refresh of pages such as /profile.html
+// independent from the catch-all route below.
+app.get('/*.html', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+
+  const relativePath = req.path.replace(/^\/+/, '');
+  const requestedFile = path.resolve(FRONTEND_ROOT, relativePath);
+
+  // Prevent path traversal and only serve files that actually exist.
+  if (
+    !requestedFile.startsWith(FRONTEND_ROOT + path.sep) &&
+    requestedFile !== FRONTEND_ROOT
+  ) {
+    return res.status(400).type('text/plain').send('Invalid path');
+  }
+
+  if (!fs.existsSync(requestedFile) || !fs.statSync(requestedFile).isFile()) {
+    return next();
+  }
+
+  return res.sendFile(requestedFile);
+});
 
 // Never rewrite asset-like URLs to the SPA shell. Return a real 404 so a
 // deployment error is visible immediately instead of being cached as HTML.
@@ -108,11 +156,20 @@ app.use((req, res, next) => {
 
 app.use('/api', notFoundHandler);
 
-// Frontend catch-all is reserved for browser document navigations only.
+// Frontend catch-all is reserved for extensionless browser document
+// navigations. Never use it to answer missing asset requests.
 app.get('*', (req, res, next) => {
   if (req.method !== 'GET' || req.path.startsWith('/api/')) return next();
+
+  // Requests containing a file extension must already have been handled by
+  // express.static / the explicit HTML handler; otherwise return a real 404.
+  if (/\.[a-z0-9]{1,12}$/i.test(req.path)) {
+    return res.status(404).type('text/plain').send('Static asset not found');
+  }
+
   const acceptsHtml = (req.headers.accept || '').includes('text/html');
   if (!acceptsHtml) return res.status(404).type('text/plain').send('Not found');
+
   return res.sendFile(path.join(FRONTEND_ROOT, 'index.html'));
 });
 
