@@ -30,47 +30,49 @@ function buildLightSvg(certificate, qrDataUrl) {
   ${circuitFan(1200, 60, 1, 1, '#4f46e5')}
   ${circuitFan(400, 840, -1, -1, '#4f46e5')}
 
-  <!-- الشعار الكامل والمركب في منتصف الشاشة تماماً -->
-  <g transform="translate(800, 105)">
-    <!-- الأقواس والمسارات الدائرية الخارجية -->
-    <g fill="none" stroke="url(#frameGrad)" stroke-width="2.5" stroke-linecap="round" transform="translate(-90, -90)">
-      <path d="M 90 20 A 75 75 0 1 0 165 95" />
-      <path d="M 25 90 A 75 75 0 0 0 95 160" />
-      <circle cx="150" cy="50" r="4" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
-      <circle cx="40" cy="110" r="4" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
-      <circle cx="110" cy="145" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
-    </g>
-    <!-- أيقونة البوابة والدوائر الداخلية -->
-    <g transform="translate(-22, -22)" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M 32 6 C 16 6 6 18 6 36 L 6 48 L 22 48 L 22 30 C 22 24 32 24 32 30 L 32 48 L 48 48 L 48 36 C 48 18 38 6 32 6 Z" />
-      <circle cx="18" cy="26" r="3.5" fill="#ffffff"/>
-      <circle cx="34" cy="22" r="3.5" fill="#ffffff"/>
+  <!-- الشعار المركب الحقيقي (الأقواس الخارجية مع الأيقونة والدوائر المتصلة بمنتصف الصدارة) -->
+  <g transform="translate(800, 95)">
+    <!-- القوس العلوي الأيمن والمسارات الدائرية -->
+    <path d="M 35 -45 A 55 55 0 0 1 75 15 L 75 35" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round"/>
+    <!-- القوس السفلي الأيسر والمسارات الدائرية -->
+    <path d="M -35 45 A 55 55 0 0 1 -75 -15 L -75 -35" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round"/>
+    <!-- نقاط دوائر التوصيل التقنية الخارجية للشعار -->
+    <circle cx="65" cy="-25" r="4.5" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <circle cx="-65" cy="25" r="4.5" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+    <circle cx="25" cy="62" r="4.5" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="-25" cy="-62" r="4.5" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+
+    <!-- أيقونة البوابة الأمنية في المركز تماماً -->
+    <g transform="translate(-20, -22)" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 20 5 C 10 5 4 13 4 27 L 4 38 L 16 38 L 16 24 C 16 20 24 20 24 24 L 24 38 L 36 38 L 36 27 C 36 13 30 5 20 5 Z" />
+      <circle cx="12" cy="21" r="3" fill="#ffffff"/>
+      <circle cx="28" cy="18" r="3" fill="#ffffff"/>
     </g>
   </g>
 
   <!-- اسم النادي تحت الشعار مباشرة -->
-  <text x="800" y="195" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="16" font-weight="800" letter-spacing="1">Cyber Security Club</text>
-  <text x="800" y="215" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="11" font-weight="600" letter-spacing="0.5">Arab Open University</text>
+  <text x="800" y="185" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="16" font-weight="800" letter-spacing="1">Cyber Security Club</text>
+  <text x="800" y="205" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="11" font-weight="600" letter-spacing="0.5">Arab Open University</text>
 
   <!-- عنوان الشهادة الرئيسي -->
-  <text x="800" y="260" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
-  <text x="800" y="300" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
+  <text x="800" y="250" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
+  <text x="800" y="290" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
 
   <!-- اسم الطالب البارز -->
-  <text x="800" y="370" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
-  <line x1="400" y1="405" x2="1200" y2="405" stroke="url(#frameGrad)" stroke-width="2.5"/>
+  <text x="800" y="360" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
+  <line x1="400" y1="395" x2="1200" y2="395" stroke="url(#frameGrad)" stroke-width="2.5"/>
 
   <!-- السطر التعريفي الأول -->
-  <text x="800" y="455" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
+  <text x="800" y="445" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
 
   <!-- اسم الدورة التدريبية -->
-  <text x="800" y="520" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
+  <text x="800" y="510" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
 
   <!-- السطر التعريفي الثاني -->
-  <text x="800" y="580" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
+  <text x="800" y="570" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
 
   <!-- تاريخ الإصدار الرسمي -->
-  <text x="800" y="640" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
+  <text x="800" y="630" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
 
   <!-- صندوق الـ QR Code ورمز التحقق في الزاوية السفلى -->
   <g transform="translate(1310, 680)">
