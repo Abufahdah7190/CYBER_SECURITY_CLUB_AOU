@@ -7,7 +7,11 @@
  * once. Already-applied migrations are tracked in a `schema_migrations`
  * table so re-running this script (e.g. on every deploy) is always safe.
  *
- * Usage: node src/db/migrate.js
+ * `run()` is also imported by server.js so migrations apply automatically
+ * on every boot — Render's free plan has no Shell access, so this is the
+ * only reliable way to get a new migration file live without a paid plan.
+ * Direct CLI usage (`node src/db/migrate.js`) still works for local/manual
+ * runs and is the only path that closes the pool afterward.
  */
 
 require('dotenv').config();
@@ -61,11 +65,18 @@ async function run() {
     console.log('All migrations applied.');
   } finally {
     client.release();
-    await pool.end();
   }
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+module.exports = { run };
+
+// Only when invoked directly (`npm run migrate` / `node src/db/migrate.js`)
+// do we close the pool afterward — server.js keeps it open for the app.
+if (require.main === module) {
+  run()
+    .then(() => pool.end())
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}
