@@ -116,40 +116,47 @@ function buildLightSvg(certificate, qrDataUrl) {
   ${circuitFan(1200, 60, 1, 1, '#4f46e5')}
   ${circuitFan(400, 840, -1, -1, '#4f46e5')}
 
-  <!-- شعار النادي الأصلي (دائرة منقطة مع الأيقونة والدوائر بداخله) -->
-  <g transform="translate(755, 45)">
-    <!-- الدائرة المتقطعة الخارجية -->
-    <circle cx="45" cy="45" r="42" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-dasharray="6,4"/>
-    <!-- الأيقونة والدوائر الداخلية -->
-    <path d="M 45 22 C 32 22 23 31 23 44 C 23 57 32 66 45 66 C 58 66 67 57 67 44 C 67 31 58 22 45 22 Z" fill="none" stroke="#4f46e5" stroke-width="2.5"/>
-    <path d="M 37 50 L 37 38 C 37 33 53 33 53 38 L 53 50" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="45" cy="41" r="3.5" fill="#4f46e5"/>
-    <circle cx="37" cy="50" r="2.5" fill="#4f46e5"/>
-    <circle cx="53" cy="50" r="2.5" fill="#4f46e5"/>
+  <!-- الشعار الأصلي الكامل (الدوائر الخارجية مع الأيقونة والدوائر بداخله) -->
+  <g transform="translate(710, 25)">
+    <!-- الأقواس والمسارات الدائرية الخارجية -->
+    <g fill="none" stroke="url(#frameGrad)" stroke-width="2.5" stroke-linecap="round">
+      <path d="M 90 20 A 75 75 0 1 0 165 95" />
+      <path d="M 25 90 A 75 75 0 0 0 95 160" />
+      <circle cx="150" cy="50" r="4" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+      <circle cx="40" cy="110" r="4" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+      <circle cx="110" cy="145" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    </g>
+    <!-- أيقونة البوابة والدوائر الداخلية -->
+    <g transform="translate(48, 25)" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 32 6 C 16 6 6 18 6 36 L 6 48 L 22 48 L 22 30 C 22 24 32 24 32 30 L 32 48 L 48 48 L 48 36 C 48 18 38 6 32 6 Z" />
+      <circle cx="18" cy="26" r="3.5" fill="#ffffff"/>
+      <circle cx="34" cy="22" r="3.5" fill="#ffffff"/>
+    </g>
   </g>
 
-  <!-- اسم النادي / الجهة المصدرة -->
-  <text x="800" y="180" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="15" font-weight="800" letter-spacing="2">${escapeXml(f.clubSub)}</text>
+  <!-- اسم النادي تحت الشعار مباشرة -->
+  <text x="800" y="180" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="16" font-weight="800" letter-spacing="1">Cyber Security Club</text>
+  <text x="800" y="200" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="11" font-weight="600" letter-spacing="0.5">Arab Open University</text>
 
   <!-- عنوان الشهادة الرئيسي -->
-  <text x="800" y="235" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
-  <text x="800" y="275" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
+  <text x="800" y="245" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
+  <text x="800" y="285" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
 
   <!-- اسم الطالب البارز -->
-  <text x="800" y="345" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
-  <line x1="400" y1="380" x2="1200" y2="380" stroke="url(#frameGrad)" stroke-width="2.5"/>
+  <text x="800" y="355" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
+  <line x1="400" y1="390" x2="1200" y2="390" stroke="url(#frameGrad)" stroke-width="2.5"/>
 
   <!-- السطر التعريفي الأول -->
-  <text x="800" y="430" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
+  <text x="800" y="440" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
 
   <!-- اسم الدورة التدريبية -->
-  <text x="800" y="495" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
+  <text x="800" y="505" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
 
   <!-- السطر التعريفي الثاني -->
-  <text x="800" y="555" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
+  <text x="800" y="565" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
 
   <!-- تاريخ الإصدار الرسمي -->
-  <text x="800" y="615" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
+  <text x="800" y="625" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
 
   <!-- صندوق الـ QR Code ورمز التحقق في الزاوية السفلى -->
   <g transform="translate(1310, 680)">
