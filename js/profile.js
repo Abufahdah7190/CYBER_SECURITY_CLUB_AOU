@@ -16,17 +16,11 @@
     modal.className = 'certificate-modal certificate-options-modal';
     modal.innerHTML = `<div class="certificate-options-sheet">
       <h3>تخصيص الشهادة</h3>
-      <p>اختر لغة وثيم الشهادة قبل إعادة إصدارها.</p>
+      <p>اختر لغة الشهادة قبل إعادة إصدارها.</p>
       <label class="certificate-option-field">لغة الشهادة
         <select class="certificate-option-language">
           <option value="ar" ${certificate.language !== 'en' ? 'selected' : ''}>العربية</option>
           <option value="en" ${certificate.language === 'en' ? 'selected' : ''}>English</option>
-        </select>
-      </label>
-      <label class="certificate-option-field">ثيم الشهادة
-        <select class="certificate-option-theme">
-          <option value="light" ${certificate.theme !== 'dark' ? 'selected' : ''}>فاتح / أبيض</option>
-          <option value="dark" ${certificate.theme === 'dark' ? 'selected' : ''}>داكن / سيبراني</option>
         </select>
       </label>
       <div class="certificate-actions-print">
@@ -39,11 +33,10 @@
     modal.addEventListener('click', (event) => { if (event.target === modal) modal.remove(); });
     modal.querySelector('.apply-certificate-options').onclick = async () => {
       const language = modal.querySelector('.certificate-option-language').value;
-      const theme = modal.querySelector('.certificate-option-theme').value;
       const applyButton = modal.querySelector('.apply-certificate-options');
       applyButton.disabled = true; applyButton.textContent = 'جارٍ الإصدار...';
       try {
-        const data = await request(`${(window.CYBERCLUB_API_BASE || '').replace(/\/$/, '')}/api/learning/certificates/${encodeURIComponent(certificate.courseSlug)}`, { method: 'POST', body: JSON.stringify({ courseName: certificate.courseName, language, theme }) });
+        const data = await request(`${(window.CYBERCLUB_API_BASE || '').replace(/\/$/, '')}/api/learning/certificates/${encodeURIComponent(certificate.courseSlug)}`, { method: 'POST', body: JSON.stringify({ courseName: certificate.courseName, language, theme: 'light' }) });
         Object.assign(certificate, data.certificate);
         modal.remove();
         certificatePreview(certificate);
@@ -54,7 +47,7 @@
       }
     };
   }
-  function renderCertificates(certificates = []) { const list = $('#profile-certificates-list'); const summary = $('#profile-certificates-summary'); if (!list) return; if (summary) summary.textContent = certificates.length ? `${certificates.length} شهادة محفوظة في حسابك` : 'لم تحصل على شهادات بعد'; if (!certificates.length) { list.innerHTML = '<div class="profile-empty">لم تحصل على شهادات بعد، أكمل دوراتك الأولى لإصدار شهادتك!</div>'; return; } list.innerHTML = certificates.map((certificate) => `<article class="profile-certificate-item"><img class="profile-certificate-thumb" src="${certificateImageUrl(certificate)}" alt="معاينة شهادة ${escapeHtml(certificate.courseName)}" loading="lazy"><div class="profile-certificate-info"><h4>${escapeHtml(certificate.courseName)}</h4><p>المعرف الفريد: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><small>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')} · اللغة: ${certificate.language === 'en' ? 'English' : 'العربية'} · الثيم: ${certificate.theme === 'dark' ? 'داكن' : 'فاتح'}</small></div><div class="profile-certificate-actions"><button class="btn small" type="button" data-preview-certificate="${escapeHtml(certificate.certificateCode)}">معاينة / تحميل</button><button class="btn small ghost" type="button" data-customize-certificate="${escapeHtml(certificate.certificateCode)}">تخصيص</button><a class="btn small ghost" href="${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}" target="_blank" rel="noopener">تحقق</a></div></article>`).join(''); list.querySelectorAll('[data-preview-certificate]').forEach((button) => button.addEventListener('click', () => certificatePreview(certificates.find((item) => item.certificateCode === button.dataset.previewCertificate)))); list.querySelectorAll('[data-customize-certificate]').forEach((button) => button.addEventListener('click', () => { const certificate = certificates.find((item) => item.certificateCode === button.dataset.customizeCertificate); if (certificate) openCertificateOptions(certificate); })); }
+  function renderCertificates(certificates = []) { const list = $('#profile-certificates-list'); const summary = $('#profile-certificates-summary'); if (!list) return; if (summary) summary.textContent = certificates.length ? `${certificates.length} شهادة محفوظة في حسابك` : 'لم تحصل على شهادات بعد'; if (!certificates.length) { list.innerHTML = '<div class="profile-empty">لم تحصل على شهادات بعد، أكمل دوراتك الأولى لإصدار شهادتك!</div>'; return; } list.innerHTML = certificates.map((certificate) => `<article class="profile-certificate-item"><img class="profile-certificate-thumb" src="${certificateImageUrl(certificate)}" alt="معاينة شهادة ${escapeHtml(certificate.courseName)}" loading="lazy"><div class="profile-certificate-info"><h4>${escapeHtml(certificate.courseName)}</h4><p>المعرف الفريد: <strong>${escapeHtml(certificate.certificateCode)}</strong></p><small>تاريخ الإصدار: ${new Date(certificate.issuedAt).toLocaleDateString('ar-SA')} · اللغة: ${certificate.language === 'en' ? 'English' : 'العربية'}</small></div><div class="profile-certificate-actions"><button class="btn small" type="button" data-preview-certificate="${escapeHtml(certificate.certificateCode)}">معاينة / تحميل</button><button class="btn small ghost" type="button" data-customize-certificate="${escapeHtml(certificate.certificateCode)}">تخصيص</button><a class="btn small ghost" href="${window.location.origin}/certificate-verify.html?code=${encodeURIComponent(certificate.certificateCode)}" target="_blank" rel="noopener">تحقق</a></div></article>`).join(''); list.querySelectorAll('[data-preview-certificate]').forEach((button) => button.addEventListener('click', () => certificatePreview(certificates.find((item) => item.certificateCode === button.dataset.previewCertificate)))); list.querySelectorAll('[data-customize-certificate]').forEach((button) => button.addEventListener('click', () => { const certificate = certificates.find((item) => item.certificateCode === button.dataset.customizeCertificate); if (certificate) openCertificateOptions(certificate); })); }
   
   async function loadProfile(isRetry) {
     try {

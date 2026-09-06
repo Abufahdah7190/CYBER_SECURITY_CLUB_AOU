@@ -205,18 +205,12 @@
       const modal = document.createElement('div');
       modal.className = 'certificate-modal certificate-options-modal';
       modal.innerHTML = `<div class="certificate-options-sheet" dir="${isAr ? 'rtl' : 'ltr'}">
-        <h3>${isAr ? 'تهانينا! اختر مواصفات شهادتك' : 'Congratulations! Choose your certificate options'}</h3>
-        <p>${isAr ? 'حدد لغة الشهادة والثيم اللوني قبل إصدارها.' : 'Pick the certificate language and color theme before it is issued.'}</p>
+        <h3>${isAr ? 'تهانينا! اختر لغة شهادتك' : 'Congratulations! Choose your certificate language'}</h3>
+        <p>${isAr ? 'حدد لغة الشهادة قبل إصدارها.' : 'Pick the certificate language before it is issued.'}</p>
         <label class="certificate-option-field">${isAr ? 'لغة الشهادة' : 'Certificate language'}
           <select class="certificate-option-language">
             <option value="ar" ${isAr ? 'selected' : ''}>${isAr ? 'العربية' : 'Arabic'}</option>
             <option value="en" ${!isAr ? 'selected' : ''}>${isAr ? 'الإنجليزية' : 'English'}</option>
-          </select>
-        </label>
-        <label class="certificate-option-field">${isAr ? 'ثيم الشهادة' : 'Certificate theme'}
-          <select class="certificate-option-theme">
-            <option value="light" selected>${isAr ? 'فاتح / أبيض' : 'Light / White'}</option>
-            <option value="dark">${isAr ? 'داكن / سيبراني' : 'Dark / Cyber'}</option>
           </select>
         </label>
         <div class="certificate-actions-print">
@@ -226,9 +220,8 @@
       document.body.appendChild(modal);
       modal.querySelector('.confirm-certificate-options').onclick = () => {
         const language = modal.querySelector('.certificate-option-language').value;
-        const theme = modal.querySelector('.certificate-option-theme').value;
         modal.remove();
-        resolve({ language, theme });
+        resolve({ language, theme: 'light' });
       };
     });
   }
@@ -253,8 +246,9 @@
     const percent = Math.round(Object.values(quizScores).filter(Boolean).length / flat().length * 100);
 
     // Completing the final lesson issues the certificate immediately, so the
-    // learner picks its language and theme first instead of getting silent
-    // defaults they'd have to reissue afterwards.
+    // learner picks its language first instead of getting a silent default
+    // they'd have to reissue afterwards. Theme is always 'light' now that
+    // the dark template has been retired.
     let certificateOptions = { language: lang, theme: 'light' };
     if (percent >= 100) {
       certificateOptions = await promptCertificateOptions();

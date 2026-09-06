@@ -73,7 +73,7 @@ router.put('/progress/:courseSlug', [
   body('lastSection').optional().isInt({ min: 0, max: 30 }),
   body('quizScores').optional().isObject(),
   body('language').optional().isIn(['ar', 'en']),
-  body('theme').optional().isIn(['light', 'dark']),
+  body('theme').optional().isIn(['light']),
   body('courseName').optional().trim().isLength({ min: 2, max: 200 }),
 ], handleValidation, async (req, res, next) => {
   try {
@@ -134,7 +134,7 @@ router.post('/certificates/:courseSlug', [
   courseParam,
   body('courseName').trim().isLength({ min: 2, max: 200 }),
   body('language').isIn(['ar', 'en']),
-  body('theme').optional().isIn(['light', 'dark']),
+  body('theme').optional().isIn(['light']),
 ], handleValidation, async (req, res, next) => {
   try {
     const progressResult = await pool.query(
