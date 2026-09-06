@@ -30,20 +30,20 @@ function buildLightSvg(certificate, qrDataUrl) {
   ${circuitFan(1200, 60, 1, 1, '#4f46e5')}
   ${circuitFan(400, 840, -1, -1, '#4f46e5')}
 
-  <!-- الشعار الحقيقي المتكامل لنادي الأمن السيبراني (دائرة متقطعة وبداخلها أيقونة البوابة الأمنية والدوائر التقنية) -->
-  <g transform="translate(800, 90)">
-    <!-- الدائرة المتقطعة الخارجية للشعار -->
-    <circle cx="0" cy="0" r="45" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-dasharray="6,4" />
-    
-    <!-- نقاط اتصال تقنية على محيط الدائرة -->
-    <circle cx="32" cy="-32" r="3.5" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
-    <circle cx="-32" cy="32" r="3.5" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
-
-    <!-- أيقونة البوابة الأمنية والدوائر بداخلها في المنتصف تماماً -->
-    <g transform="translate(-17, -19)" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M 17 3 C 9 3 4 9 4 20 L 4 30 L 14 30 L 14 19 C 14 16 20 16 20 19 L 20 30 L 30 30 L 30 20 C 30 9 25 3 17 3 Z" />
+  <!-- الشعار المركب الصحيح والمقاس بعناية ليتوسط رأس الشهادة -->
+  <g transform="translate(800, 95)">
+    <!-- الأقواس والدوائر التقنية الخارجية المصغرة بدقة -->
+    <g fill="none" stroke="url(#frameGrad)" stroke-width="2.5" stroke-linecap="round">
+      <path d="M 35 -35 A 45 45 0 1 0 35 35" />
+      <path d="M -35 35 A 45 45 0 1 0 -35 -35" />
+      <circle cx="35" cy="-25" r="3.5" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+      <circle cx="-35" cy="25" r="3.5" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+    </g>
+    <!-- أيقونة البوابة الأمنية في المركز تماماً -->
+    <g transform="translate(-18, -19)" fill="none" stroke="url(#frameGrad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 18 4 C 10 4 5 10 5 22 L 5 32 L 15 32 L 15 20 C 15 16 21 16 21 20 L 21 32 L 31 32 L 31 22 C 31 10 26 4 18 4 Z" />
       <circle cx="10" cy="15" r="2.5" fill="#ffffff"/>
-      <circle cx="24" cy="13" r="2.5" fill="#ffffff"/>
+      <circle cx="26" cy="13" r="2.5" fill="#ffffff"/>
     </g>
   </g>
 
