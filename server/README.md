@@ -56,7 +56,7 @@ cp .env.example .env
 ثم:
 
 ```bash
-npm run migrate   # ينشئ كل الجداول في قاعدة البيانات
+npm run migrate   # يطبق كل migrations مرة واحدة (آمن عند إعادة التشغيل)
 npm run dev        # يشغّل السيرفر مع إعادة تحميل تلقائي (nodemon)
 ```
 
@@ -82,10 +82,7 @@ curl http://localhost:3000/api/health
    - **Build Command:** `npm install`
    - **Start Command:** `npm start`
 4. أضف متغيرات البيئة (Environment) من `.env.example`، بما فيها `DATABASE_URL` من Supabase، وقيم JWT العشوائية، و`NODE_ENV=production`، و`FRONTEND_URL` = رابط تطبيقك على Render نفسه (مثلًا `https://your-app.onrender.com`).
-5. بعد أول نشر، شغّل الـ migration مرة واحدة من **Shell** الخاص بـ Render:
-   ```bash
-   npm run migrate
-   ```
+5. تم تعديل `npm start` ليطبق الـ migrations تلقائيًا قبل تشغيل السيرفر. الـ runner يسجل كل ملف في `schema_migrations`، لذلك إعادة التشغيل أو إعادة النشر لا تعيد تطبيق migration سبق نجاحها.
 
 ### 3. البريد الإلكتروني — Gmail SMTP عبر Nodemailer (مجاني)
 1. فعّل **التحقق بخطوتين (2-Step Verification)** على حساب Gmail الذي سيرسل الإيميلات.

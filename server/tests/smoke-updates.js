@@ -25,7 +25,7 @@ async function main() {
   const svg = attachment.content.toString('utf8');
   assert.equal(attachment.filename, 'CERT-2026-TEST.svg');
   assert.equal(attachment.contentType, 'image/svg+xml');
-  assert.match(svg, /width="1600" height="1131"/);
+  assert.match(svg, /width="1600" height="900"/);
   assert.match(svg, /سارة العتيبي/);
   assert.match(svg, /data:image\/png;base64,/);
 
