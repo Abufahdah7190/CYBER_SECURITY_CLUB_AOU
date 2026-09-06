@@ -51,7 +51,6 @@ function commonFields(certificate) {
 function buildLightSvg(certificate, qrDataUrl) {
   const f = commonFields(certificate);
   const isEn = f.isEn;
-  // دعم الخطوط العربية (Cairo) والإنجليزية بشكل ديناميكي أنيق
   const bodyStack = isEn ? 'Georgia, "Times New Roman", serif' : '"Cairo", "Tahoma", sans-serif';
   const sansStack = '"Segoe UI", "Helvetica Neue", Arial, sans-serif';
   const logo = logoDataUrl();
@@ -77,13 +76,12 @@ function buildLightSvg(certificate, qrDataUrl) {
   <rect x="30" y="30" width="1540" height="840" rx="12" fill="none" stroke="url(#frameGrad)" stroke-width="5"/>
   <rect x="42" y="42" width="1516" height="816" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
 
-  <!-- الخطوط التقنية البارزة والواضحة في الزوايا -->
-  ${circuitFan(1250, 60, 1, 1, '#4f46e5')}
-  ${circuitFan(350, 840, -1, -1, '#4f46e5')}
+  <!-- الخطوط التقنية البارزة بعيدة تماماً عن منتصف الشهادة -->
+  ${circuitFan(1200, 60, 1, 1, '#4f46e5')}
+  ${circuitFan(400, 840, -1, -1, '#4f46e5')}
 
-  <!-- شعار النادي الدائري في الأعلى -->
-  <circle cx="800" cy="115" r="45" fill="#ffffff" stroke="#818cf8" stroke-width="3"/>
-  <image x="755" y="70" width="90" height="90" href="${logo}" preserveAspectRatio="xMidYMid meet"/>
+  <!-- الشعار المفرغ في الأعلى (بدون دائرة خارجية تسبب تداخلاً) -->
+  <image x="750" y="65" width="100" height="100" href="${logo}" preserveAspectRatio="xMidYMid meet"/>
 
   <!-- اسم النادي / الجهة المصدرة -->
   <text x="800" y="185" text-anchor="middle" fill="#475569" font-family="${sansStack}" font-size="15" font-weight="800" letter-spacing="2">${escapeXml(f.clubSub)}</text>
