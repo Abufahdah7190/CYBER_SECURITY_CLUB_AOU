@@ -2040,15 +2040,32 @@ body.auth-locked #tab-auth {
 .certificate-bottom img { width: 130px; height: 130px; }
 .certificate-bottom small { color: #4a5568; line-height: 1.7; }
 .certificate-actions-print { display: flex; justify-content: center; gap: 10px; margin-top: 24px; }
-@media print { .certificate-modal { position: static; background: #fff; padding: 0; } .certificate-sheet { width: 100%; min-height: 0; border-width: 8px; box-shadow: none; } .certificate-actions-print { display: none; } body > *:not(.certificate-modal) { display: none !important; } }
+@media print {
+  /* Certificate artwork is a fixed 1600x900 (16:9) SVG — force the printed
+     page itself into landscape, or the browser defaults to Portrait and
+     either crops the certificate or shrinks it into a corner. */
+  @page { size: landscape; margin: 0; }
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  .certificate-modal { position: static; background: #fff; padding: 0; }
+  .certificate-sheet { width: 100%; min-height: 0; border-width: 8px; box-shadow: none; }
+  .certificate-actions-print { display: none; }
+  body > *:not(.certificate-modal) { display: none !important; }
+}
 @media (max-width: 600px) { #verify-form { flex-direction: column; } .certificate-sheet { padding: 28px 20px 20px; } .certificate-logos img { width: 65px; height: 65px; } .certificate-bottom { align-items: center; flex-direction: column; text-align: center; } }
 .certificate-lang-choice { min-height: 0; border-width: 8px; padding: 40px 32px; }
 
 /* Real SVG certificate preview (email attachment / download / verify page) */
 .certificate-sheet-image { width: min(920px, 100%); min-height: 0; box-sizing: border-box; margin: auto; padding: 20px; text-align: center; background: transparent; border: none; box-shadow: none; }
-.certificate-render { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.5); background: #fff; }
+.certificate-render { display: block; width: 100%; height: auto; aspect-ratio: 1600 / 900; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.5); background: #fff; object-fit: contain; }
 .certificate-sheet-image .certificate-disclaimer { color: var(--muted, #9aa7b5); font-size: 13px; margin-top: 14px; }
 .certificate-sheet-image .certificate-disclaimer a { color: var(--accent2, #00e5ff); }
+@media print {
+  /* On the print/PDF page: no card padding, no shadow, no rounding — the
+     certificate image fills the landscape page edge-to-edge at its native
+     16:9 ratio so nothing gets cropped or re-oriented by the browser. */
+  .certificate-sheet-image { width: 100vw; max-width: none; padding: 0; margin: 0; }
+  .certificate-render { width: 100vw; height: auto; max-height: 100vh; box-shadow: none; border-radius: 0; margin: 0 auto; }
+}
 .course-certificate-preview, .verify-certificate-image { display: block; width: 100%; max-width: 720px; height: auto; margin: 16px auto; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 .profile-certificate-item { display: flex; gap: 14px; align-items: center; }
 .profile-certificate-thumb { width: 140px; height: auto; border-radius: 8px; flex-shrink: 0; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
