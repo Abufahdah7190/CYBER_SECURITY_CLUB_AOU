@@ -13,6 +13,7 @@ const {
   imageUrlFor,
   verificationUrlFor,
 } = require('../services/certificate.service');
+const { courseNameFor } = require('../data/course-catalog');
 
 const router = express.Router();
 const courseParam = param('courseSlug').trim().isSlug().isLength({ max: 80 });
@@ -119,7 +120,10 @@ router.put('/progress/:courseSlug', [
       const issued = await issueCertificate({
         studentId: req.user.id,
         courseSlug,
-        courseName: String(req.body.courseName || courseSlug).trim(),
+        // Resolve from the backend catalog by the certificate's own
+        // language first — falls back to whatever the client sent only
+        // for a slug outside the known course list.
+        courseName: courseNameFor(courseSlug, language) || String(req.body.courseName || courseSlug).trim(),
         studentName: studentFullName(user),
         language,
         theme,
@@ -170,7 +174,7 @@ router.post('/certificates/:courseSlug', [
     const issued = await issueCertificate({
       studentId: req.user.id,
       courseSlug: req.params.courseSlug,
-      courseName: req.body.courseName,
+      courseName: courseNameFor(req.params.courseSlug, req.body.language) || req.body.courseName,
       studentName: studentFullName(user),
       language: req.body.language,
       theme: req.body.theme || 'light',
