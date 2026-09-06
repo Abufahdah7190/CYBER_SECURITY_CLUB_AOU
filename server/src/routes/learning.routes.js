@@ -13,7 +13,7 @@ const {
   imageUrlFor,
   verificationUrlFor,
 } = require('../services/certificate.service');
-const { courseNameFor } = require('../../../data/course-catalog');
+const { courseNameFor } = require('../data/course-catalog');
 
 const router = express.Router();
 const courseParam = param('courseSlug').trim().isSlug().isLength({ max: 80 });
