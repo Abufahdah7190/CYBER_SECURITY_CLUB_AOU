@@ -10,6 +10,8 @@ const {
   renderCertificateSvg,
   queueCertificateEmail,
   withQrDataUrl,
+  imageUrlFor,
+  verificationUrlFor,
 } = require('../services/certificate.service');
 
 const router = express.Router();
@@ -59,11 +61,20 @@ router.get('/progress', async (req, res, next) => {
     );
     const certificates = await pool.query(
       `SELECT course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName", language, theme,
-              certificate_code AS "certificateCode", issued_at AS "issuedAt"
+              certificate_code AS "certificateCode", issued_at AS "issuedAt", updated_at AS "updatedAt"
        FROM student_course_certificates WHERE student_id = $1 ORDER BY issued_at DESC`,
       [req.user.id]
     );
-    return res.json({ progress: rows, certificates: certificates.rows });
+    // imageUrl carries a ?v=<updated_at> cache-buster so a certificate that
+    // was just switched to a new language/theme shows up immediately
+    // instead of the browser serving the previous cached artwork under the
+    // same certificate_code URL.
+    const certificatesWithUrls = certificates.rows.map((certificate) => ({
+      ...certificate,
+      imageUrl: imageUrlFor(certificate.certificateCode, certificate.updatedAt),
+      verificationUrl: verificationUrlFor(certificate.certificateCode),
+    }));
+    return res.json({ progress: rows, certificates: certificatesWithUrls });
   } catch (error) { return next(error); }
 });
 
