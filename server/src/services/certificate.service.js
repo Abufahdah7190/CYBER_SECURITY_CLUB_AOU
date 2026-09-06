@@ -116,37 +116,47 @@ function buildLightSvg(certificate, qrDataUrl) {
   ${circuitFan(1200, 60, 1, 1, '#4f46e5')}
   ${circuitFan(400, 840, -1, -1, '#4f46e5')}
 
-  <!-- شعار النادي السيبراني الهندسي المفرغ والنظيف -->
-  <g transform="translate(755, 60)" fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 45 10 C 25 10 10 25 10 45 C 10 65 25 80 45 80 C 65 80 80 65 80 45 C 80 25 65 10 45 10 Z" stroke-dasharray="6,4" />
-    <path d="M 35 55 L 35 35 C 35 28 55 28 55 35 L 55 55" stroke-width="3.5"/>
-    <circle cx="45" cy="45" r="4" fill="#4f46e5"/>
-    <circle cx="35" cy="55" r="3" fill="#4f46e5"/>
-    <circle cx="55" cy="55" r="3" fill="#4f46e5"/>
+  <!-- شعار نادي الأمن السيبراني الكامل والمتناسق -->
+  <g transform="translate(710, 35)">
+    <!-- الدوائر والمسارات الخارجية الدائرية -->
+    <g fill="none" stroke="url(#frameGrad)" stroke-width="2.5" stroke-linecap="round">
+      <path d="M 90 20 A 75 75 0 1 0 165 95" />
+      <path d="M 25 90 A 75 75 0 0 0 95 160" />
+      <circle cx="150" cy="50" r="4" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+      <circle cx="40" cy="110" r="4" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+      <circle cx="110" cy="145" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    </g>
+    <!-- أيقونة البوابة والدوائر الداخلية -->
+    <g transform="translate(48, 25)" fill="none" stroke="url(#frameGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 32 6 C 16 6 6 18 6 36 L 6 48 L 22 48 L 22 30 C 22 24 32 24 32 30 L 32 48 L 48 48 L 48 36 C 48 18 38 6 32 6 Z" />
+      <circle cx="18" cy="26" r="3.5" fill="#ffffff"/>
+      <circle cx="34" cy="22" r="3.5" fill="#ffffff"/>
+    </g>
   </g>
 
-  <!-- اسم النادي / الجهة المصدرة -->
-  <text x="800" y="180" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="15" font-weight="800" letter-spacing="2">${escapeXml(f.clubSub)}</text>
+  <!-- اسم النادي تحت الشعار مباشرة -->
+  <text x="800" y="185" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="17" font-weight="800" letter-spacing="1">Cyber Security Club</text>
+  <text x="800" y="205" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="11" font-weight="600" letter-spacing="0.5">Arab Open University</text>
 
   <!-- عنوان الشهادة الرئيسي -->
-  <text x="800" y="235" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
-  <text x="800" y="275" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
+  <text x="800" y="245" text-anchor="middle" fill="url(#titleGrad)" font-family='${bodyStack}' font-size="40" font-weight="800" letter-spacing="1">${escapeXml(f.title)}</text>
+  <text x="800" y="285" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.awardedTo)}</text>
 
   <!-- اسم الطالب البارز -->
-  <text x="800" y="345" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
-  <line x1="400" y1="380" x2="1200" y2="380" stroke="url(#frameGrad)" stroke-width="2.5"/>
+  <text x="800" y="355" text-anchor="middle" fill="#0f172a" font-family='${sansStack}' font-size="46" font-weight="800">${escapeXml(certificate.studentName)}</text>
+  <line x1="400" y1="390" x2="1200" y2="390" stroke="url(#frameGrad)" stroke-width="2.5"/>
 
   <!-- السطر التعريفي الأول -->
-  <text x="800" y="430" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
+  <text x="800" y="440" text-anchor="middle" fill="#1e293b" font-family='${sansStack}' font-size="18" font-weight="600">${escapeXml(f.statementLine1)}</text>
 
   <!-- اسم الدورة التدريبية -->
-  <text x="800" y="495" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
+  <text x="800" y="505" text-anchor="middle" fill="#1d4ed8" font-family='${sansStack}' font-size="30" font-weight="800">${escapeXml(certificate.courseName)}</text>
 
   <!-- السطر التعريفي الثاني -->
-  <text x="800" y="555" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
+  <text x="800" y="565" text-anchor="middle" fill="#334155" font-family='${sansStack}' font-size="16" font-weight="600">${escapeXml(f.statementLine2)}</text>
 
   <!-- تاريخ الإصدار الرسمي -->
-  <text x="800" y="615" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
+  <text x="800" y="625" text-anchor="middle" fill="#475569" font-family='${sansStack}' font-size="16" font-weight="700">${escapeXml(f.awardedDay)} ${escapeXml(f.issueDate)}</text>
 
   <!-- صندوق الـ QR Code ورمز التحقق في الزاوية السفلى -->
   <g transform="translate(1310, 680)">
@@ -158,9 +168,6 @@ function buildLightSvg(certificate, qrDataUrl) {
 </svg>`;
 }
 
-// Only the Light theme ships today (routes/DB already restrict `theme` to
-// 'light'), but rendering is still resolved through one place so a future
-// Dark theme is a one-line addition here, not a scattered change.
 function buildSvg(certificate, qrDataUrl) {
   return buildLightSvg(certificate, qrDataUrl);
 }
@@ -197,9 +204,6 @@ async function findExisting(studentId, courseSlug) {
 }
 
 async function insertCertificate({ studentId, courseSlug, courseName, studentName, language, theme }) {
-  // certificate_code has its own UNIQUE constraint; retry a couple of times
-  // on the (astronomically unlikely) collision instead of ever failing the
-  // student's completion request.
   let lastError;
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const certificateCode = generateCertificateCode();
@@ -214,7 +218,7 @@ async function insertCertificate({ studentId, courseSlug, courseName, studentNam
     } catch (error) {
       if (error.code === '23505' && error.constraint === 'student_course_certificates_certificate_code_key') {
         lastError = error;
-        continue; // certificate_code collision — try another code
+        continue;
       }
       throw error;
     }
@@ -225,25 +229,14 @@ async function insertCertificate({ studentId, courseSlug, courseName, studentNam
 async function updateCertificate({ studentId, courseSlug, courseName, studentName, language, theme }) {
   const { rows } = await pool.query(
     `UPDATE student_course_certificates
-       SET course_name = $3, student_name = $4, language = $5, theme = $6
-       WHERE student_id = $1 AND course_slug = $2
-       RETURNING ${CERTIFICATE_COLUMNS}`,
+        SET course_name = $3, student_name = $4, language = $5, theme = $6
+        WHERE student_id = $1 AND course_slug = $2
+        RETURNING ${CERTIFICATE_COLUMNS}`,
     [studentId, courseSlug, courseName, studentName, normalizeLanguage(language), theme || 'light']
   );
   return rows[0];
 }
 
-/**
- * Issues (or, with updateExisting, re-issues in a new language/theme) the
- * certificate for one student/course. A student only ever holds one
- * certificate row per course — re-issuing updates that same row and keeps
- * its original certificate_code, so a previously shared verification link
- * or downloaded file never goes stale.
- *
- * Returns { created, certificate }. `created` is true only the first time
- * a certificate row is inserted for that student/course — callers use it
- * to decide whether to send the "certificate issued" email again.
- */
 async function issueCertificate({ studentId, courseSlug, courseName, studentName, language, theme, updateExisting }) {
   const existing = await findExisting(studentId, courseSlug);
   if (existing) {
@@ -297,11 +290,6 @@ function certificateEmailHtml(certificate) {
   </div>`;
 }
 
-/**
- * Fire-and-forget: intentionally not awaited by callers, so a slow or
- * unavailable mail transport never delays the completion/response the
- * student is waiting on. All failures are caught and logged here.
- */
 function queueCertificateEmail({ certificate, recipientEmail }) {
   (async () => {
     try {
