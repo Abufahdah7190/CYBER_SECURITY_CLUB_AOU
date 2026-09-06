@@ -58,8 +58,16 @@ function verificationUrlFor(certificateCode) {
   return `${env.FRONTEND_URL}/certificate-verify.html?code=${encodeURIComponent(certificateCode)}`;
 }
 
-function imageUrlFor(certificateCode) {
-  return `${env.FRONTEND_URL}/api/learning/certificates/${encodeURIComponent(certificateCode)}/image`;
+function imageUrlFor(certificateCode, updatedAt) {
+  const base = `${env.FRONTEND_URL}/api/learning/certificates/${encodeURIComponent(certificateCode)}/image`;
+  // Cache-busting version: the image route sets a 1-hour Cache-Control, so
+  // without this a certificate that was just re-issued in a new language/
+  // theme would keep showing the old cached artwork under the same URL
+  // (the certificate_code, and therefore the URL, never changes on
+  // re-issue). Appending the row's updated_at makes the URL change the
+  // moment the certificate changes, forcing a fresh fetch immediately.
+  if (!updatedAt) return base;
+  return `${base}?v=${encodeURIComponent(new Date(updatedAt).getTime())}`;
 }
 
 function generateCertificateCode() {
@@ -197,7 +205,7 @@ async function qrDataUrlFor(certificateCode) {
 // ---------------------------------------------------------------------
 
 const CERTIFICATE_COLUMNS = `course_slug AS "courseSlug", course_name AS "courseName", student_name AS "studentName",
-  language, theme, certificate_code AS "certificateCode", issued_at AS "issuedAt"`;
+  language, theme, certificate_code AS "certificateCode", issued_at AS "issuedAt", updated_at AS "updatedAt"`;
 
 async function findByCode(certificateCode) {
   const { rows } = await pool.query(
@@ -244,7 +252,7 @@ async function insertCertificate({ studentId, courseSlug, courseName, studentNam
 async function updateCertificate({ studentId, courseSlug, courseName, studentName, language, theme }) {
   const { rows } = await pool.query(
     `UPDATE student_course_certificates
-       SET course_name = $3, student_name = $4, language = $5, theme = $6
+       SET course_name = $3, student_name = $4, language = $5, theme = $6, updated_at = now()
        WHERE student_id = $1 AND course_slug = $2
        RETURNING ${CERTIFICATE_COLUMNS}`,
     [studentId, courseSlug, courseName, studentName, normalizeLanguage(language), theme || 'light']
@@ -289,7 +297,7 @@ async function withQrDataUrl(certificate) {
     ...certificate,
     theme: certificate.theme || 'light',
     verificationUrl: verificationUrlFor(certificate.certificateCode),
-    imageUrl: imageUrlFor(certificate.certificateCode),
+    imageUrl: imageUrlFor(certificate.certificateCode, certificate.updatedAt),
     qrDataUrl,
   };
 }
@@ -350,4 +358,6 @@ module.exports = {
   withQrDataUrl,
   queueCertificateEmail,
   buildLightSvg,
+  imageUrlFor,
+  verificationUrlFor,
 };
