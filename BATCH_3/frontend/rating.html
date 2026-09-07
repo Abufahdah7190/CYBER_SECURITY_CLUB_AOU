@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تقييم الأطباء — مستشفى المستقبل</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .rating-container { max-width: 600px; margin: 0 auto; }
+    .doctor-info { background: var(--gray-50); padding: 2rem; border-radius: var(--radius-lg); margin-bottom: 2rem; text-align: center; }
+    .star-rating { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; }
+    .star { font-size: 2rem; color: #ddd; cursor: pointer; transition: color 0.2s; }
+    .star:hover, .star.active { color: #fbbf24; }
+    .reviews-section { margin-top: 3rem; }
+    .review-card { border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .rating-summary { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem; }
+    .rating-breakdown { display: flex; flex-direction: column; gap: 0.5rem; }
+    .rating-bar { display: flex; align-items: center; gap: 1rem; }
+    .bar { flex: 1; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #fbbf24; }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Success/Error Messages */
+    .message {
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      display: none;
+    }
+    
+    .message.success {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    
+    .message.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    
+    /* Button States */
+    .btn.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    /* Mobile Responsive Design */
+    @media (max-width: 768px) {
+      .doctor-info {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      .star {
+        font-size: 2.5rem;
+        padding: 0.5rem;
+      }
+      
+      .star-rating {
+        gap: 0.3rem;
+      }
+      
+      .rating-summary {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .form-group select,
+      .form-group textarea,
+      .btn {
+        font-size: 1.1rem;
+        padding: 1rem;
+      }
+      
+      .btn {
+        min-height: 50px;
+        font-weight: 600;
+      }
+      
+      .review-card {
+        padding: 1rem;
+      }
+      
+      .rating-bar {
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
+      
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+    }
+    
+    /* Tablet Responsive Design */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .rating-container {
+        max-width: 700px;
+      }
+      
+      .star {
+        font-size: 2.2rem;
+      }
+      
+      .btn {
+        min-height: 45px;
+      }
+    }
+    
+    /* Enhanced Button Styling */
+    .btn.primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn.primary:hover:not(.loading) {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn.primary:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-name">مستشفى المستقبل</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="breadcrumbs">
+    <div class="container">
+      <ol>
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="dashboard.html">لوحتي</a></li>
+        <li><span>تقييم الطبيب</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>تقييم الطبيب</h1>
+      <p>شاركنا تجربتك مع الطبيب</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="rating-container">
+        <div class="doctor-info" id="doctorInfo">
+          <h2 id="doctorName">د. محمد أحمد</h2>
+          <p id="doctorSpecialty">طب عام</p>
+          <div class="current-rating">
+            <span id="avgRating">4.5</span>
+            <span class="rating-stars">★★★★☆</span>
+            <span>(<span id="reviewCount">25</span> تقييم)</span>
+          </div>
+        </div>
+
+        <form id="ratingForm" class="form-container">
+          <h3>تقييمك للطبيب</h3>
+          
+          <div class="form-group">
+            <label>التقييم العام</label>
+            <div class="star-rating" id="starRating">
+              <span class="star" data-rating="1">★</span>
+              <span class="star" data-rating="2">★</span>
+              <span class="star" data-rating="3">★</span>
+              <span class="star" data-rating="4">★</span>
+              <span class="star" data-rating="5">★</span>
+            </div>
+            <input type="hidden" id="rating" name="rating" required>
+          </div>
+
+          <div class="form-group">
+            <label>جوانب التقييم</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div>
+                <label>الخبرة المهنية</label>
+                <select id="expertise" class="form-control">
+                  <option value="5">ممتاز</option>
+                  <option value="4">جيد جداً</option>
+                  <option value="3">جيد</option>
+                  <option value="2">مقبول</option>
+                  <option value="1">ضعيف</option>
+                </select>
+              </div>
+              <div>
+                <label>التواصل</label>
+                <select id="communication" class="form-control">
+                  <option value="5">ممتاز</option>
+                  <option value="4">جيد جداً</option>
+                  <option value="3">جيد</option>
+                  <option value="2">مقبول</option>
+                  <option value="1">ضعيف</option>
+                </select>
+              </div>
+              <div>
+                <label>الالتزام بالوقت</label>
+                <select id="punctuality" class="form-control">
+                  <option value="5">ممتاز</option>
+                  <option value="4">جيد جداً</option>
+                  <option value="3">جيد</option>
+                  <option value="2">مقبول</option>
+                  <option value="1">ضعيف</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>تعليقك (اختياري)</label>
+            <textarea id="comment" rows="4" placeholder="شاركنا تجربتك مع الطبيب..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="recommend"> أنصح بهذا الطبيب للآخرين
+            </label>
+          </div>
+
+          <div id="messageContainer"></div>
+          <button type="submit" class="btn primary" id="submitBtn">
+            إرسال التقييم
+            <span class="loading-spinner" id="loadingSpinner"></span>
+          </button>
+        </form>
+
+        <div class="reviews-section">
+          <h3>آراء المرضى</h3>
+          
+          <div class="rating-summary">
+            <div class="overall-rating" style="text-align: center;">
+              <div style="font-size: 3rem; font-weight: bold; color: var(--primary);" id="overallRating">4.5</div>
+              <div class="rating-stars" style="font-size: 1.5rem; color: #fbbf24;">★★★★☆</div>
+              <div>من أصل 5 نجوم</div>
+            </div>
+            
+            <div class="rating-breakdown">
+              <div class="rating-bar">
+                <span>5 نجوم</span>
+                <div class="bar"><div class="bar-fill" style="width: 60%"></div></div>
+                <span>15</span>
+              </div>
+              <div class="rating-bar">
+                <span>4 نجوم</span>
+                <div class="bar"><div class="bar-fill" style="width: 30%"></div></div>
+                <span>8</span>
+              </div>
+              <div class="rating-bar">
+                <span>3 نجوم</span>
+                <div class="bar"><div class="bar-fill" style="width: 8%"></div></div>
+                <span>2</span>
+              </div>
+              <div class="rating-bar">
+                <span>2 نجوم</span>
+                <div class="bar"><div class="bar-fill" style="width: 0%"></div></div>
+                <span>0</span>
+              </div>
+              <div class="rating-bar">
+                <span>1 نجمة</span>
+                <div class="bar"><div class="bar-fill" style="width: 0%"></div></div>
+                <span>0</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="reviewsList">
+            <div class="review-card">
+              <div class="review-header">
+                <div>
+                  <strong>أحمد محمد</strong>
+                  <div class="rating-stars" style="color: #fbbf24;">★★★★★</div>
+                </div>
+                <small>منذ أسبوع</small>
+              </div>
+              <p>طبيب ممتاز ومتفهم، شرح لي حالتي بوضوح وأعطاني العلاج المناسب. أنصح به بشدة.</p>
+            </div>
+            
+            <div class="review-card">
+              <div class="review-header">
+                <div>
+                  <strong>فاطمة علي</strong>
+                  <div class="rating-stars" style="color: #fbbf24;">★★★★☆</div>
+                </div>
+                <small>منذ أسبوعين</small>
+              </div>
+              <p>خبرة جيدة، لكن كان هناك تأخير في الموعد. الطبيب محترف ومتمكن.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let selectedRating = 0;
+
+    // Star rating functionality
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', (e) => {
+        selectedRating = parseInt(e.target.dataset.rating);
+        document.getElementById('rating').value = selectedRating;
+        updateStars();
+      });
+
+      star.addEventListener('mouseover', (e) => {
+        const hoverRating = parseInt(e.target.dataset.rating);
+        highlightStars(hoverRating);
+      });
+    });
+
+    document.getElementById('starRating').addEventListener('mouseleave', () => {
+      updateStars();
+    });
+
+    function updateStars() {
+      highlightStars(selectedRating);
+    }
+
+    function highlightStars(rating) {
+      document.querySelectorAll('.star').forEach((star, index) => {
+        if (index < rating) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
+      });
+    }
+
+    // Message display functions
+    function showMessage(text, type) {
+      const messageContainer = document.getElementById('messageContainer');
+      messageContainer.innerHTML = `<div class="message ${type}">${text}</div>`;
+      messageContainer.querySelector('.message').style.display = 'block';
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        const message = messageContainer.querySelector('.message');
+        if (message) message.style.display = 'none';
+      }, 5000);
+    }
+    
+    function hideMessage() {
+      const messageContainer = document.getElementById('messageContainer');
+      const message = messageContainer.querySelector('.message');
+      if (message) message.style.display = 'none';
+    }
+    
+    function setLoading(isLoading) {
+      const submitBtn = document.getElementById('submitBtn');
+      const spinner = document.getElementById('loadingSpinner');
+      
+      if (isLoading) {
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+      } else {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    }
+
+    // Form submission
+    document.getElementById('ratingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessage();
+      
+      if (selectedRating === 0) {
+        showMessage('يرجى اختيار تقييم من النجوم', 'error');
+        return;
+      }
+      
+      setLoading(true);
+      
+      try {
+        const formData = {
+          doctorId: new URLSearchParams(location.search).get('doctor') || '1',
+          rating: selectedRating,
+          expertise: document.getElementById('expertise').value,
+          communication: document.getElementById('communication').value,
+          punctuality: document.getElementById('punctuality').value,
+          comment: document.getElementById('comment').value,
+          recommend: document.getElementById('recommend').checked
+        };
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        showMessage('تم إرسال تقييمك بنجاح! شكراً لك على مشاركة تجربتك.', 'success');
+        
+        // Reset form after successful submission
+        setTimeout(() => {
+          document.getElementById('ratingForm').reset();
+          selectedRating = 0;
+          updateStars();
+        }, 1500);
+        
+      } catch (error) {
+        showMessage('حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>Id') || '1',
+        rating: selectedRating,
+        expertise: document.getElementById('expertise').value,
+        communication: document.getElementById('communication').value,
+        punctuality: document.getElementById('punctuality').value,
+        comment: document.getElementById('comment').value,
+        recommend: document.getElementById('recommend').checked,
+        date: new Date().toISOString(),
+        patientName: JSON.parse(localStorage.getItem('currentUser') || '{}').name || 'مريض'
+      };
+
+      // Save rating
+      const ratings = JSON.parse(localStorage.getItem('doctor_ratings') || '[]');
+      ratings.push(formData);
+      localStorage.setItem('doctor_ratings', JSON.stringify(ratings));
+
+      alert('شكراً لك! تم إرسال تقييمك بنجاح');
+      
+      // Redirect back to dashboard
+      setTimeout(() => {
+        location.href = 'dashboard.html';
+      }, 1000);
+    });
+
+    // Load doctor info from URL parameters
+    function loadDoctorInfo() {
+      const params = new URLSearchParams(location.search);
+      const doctorName = params.get('doctor') || 'د. محمد أحمد';
+      const specialty = params.get('specialty') || 'طب عام';
+      
+      document.getElementById('doctorName').textContent = doctorName;
+      document.getElementById('doctorSpecialty').textContent = specialty;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadDoctorInfo);
+  </script>
+</body>
+</html>
