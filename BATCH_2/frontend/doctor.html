@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>طبيب — مستشفى المستقبل</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .doctor-page{padding:40px}
+    .doctor-card{max-width:800px;margin:0 auto;background:#fff;padding:20px;border-radius:12px}
+  </style>
+</head>
+<body>
+  <header class="site-header"><div class="container header-inner"><a class="brand" href="/">مستشفى المستقبل</a></div></header>
+  <main id="main" class="doctor-page">
+    <div class="container">
+      <div id="content" class="doctor-card">جارٍ التحميل...</div>
+    </div>
+  </main>
+  <script>
+    async function fetchDoctor(slug){
+      const res = await fetch('/api/doctors/slug/' + encodeURIComponent(slug));
+      if(!res.ok){document.getElementById('content').innerText='الطبيب غير موجود'; return}
+      const d = await res.json();
+      document.title = d.name + ' — مستشفى المستقبل';
+      document.getElementById('content').innerHTML = `
+        <h1>${d.name}</h1>
+        <p><strong>التخصص:</strong> ${d.specialty || '-'}</p>
+        <p>${d.bio || 'لا توجد نبذة.'}</p>
+        <a class="btn primary" href="/booking?doctor=${encodeURIComponent(d.slug)}">حجز موعد لدى ${d.name}</a>
+      `;
+    }
+    (function(){
+      const parts = location.pathname.split('/');
+      const slug = parts[parts.length-1] || '';
+      fetchDoctor(slug);
+    })();
+  </script>
+</body>
+</html>
